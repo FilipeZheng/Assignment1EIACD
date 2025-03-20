@@ -1,0 +1,40 @@
+Para definir heurísticas no *Dou Shou Qi* (Jungle Game), você precisa identificar características-chave do jogo e os padrões de comportamento das peças para facilitar a tomada de decisões em estratégias de jogo. As heurísticas são orientações ou regras que ajudam a avaliar a situação do jogo sem a necessidade de uma análise exaustiva, baseando-se em padrões ou valores mais simples.
+
+Aqui estão algumas possíveis heurísticas para *Dou Shou Qi*:
+
+### 1. **Heurísticas Baseadas no Valor das Peças**
+   Cada peça tem um valor relativo em termos de poder de captura, que pode ser usado para avaliar sua importância no tabuleiro:
+   - **Leão** (5 pontos): A peça mais forte e importante. A heurística poderia priorizar proteger o Leão e colocá-lo em uma posição de ataque dominante.
+   - **Tigre** (4 pontos): Uma peça forte, capaz de pular sobre as peças adversárias. Pode ser usada para pressionar o adversário e capturar peças de valor mais baixo.
+   - **Elefante** (3 pontos): Valiosa, mas limitada pelo seu movimento. Ele pode ser mais vulnerável em certas situações.
+   - **Cavalo** (2 pontos): Versátil, capaz de mover-se de forma complexa. Heurísticas podem priorizar sua mobilidade e o controle de áreas-chave do tabuleiro.
+   - **Gato e Rato** (1 ponto): Fracas em comparação com as outras peças. Elas podem ser usadas para enganar o oponente ou ocupar posições estratégicas para capturar peças menores (especialmente o Rato que pode capturar o Elefante).
+
+### 2. **Heurísticas de Posição e Mobilidade**
+   - **Controle de área**: Heurísticas podem priorizar peças que controlam áreas importantes do tabuleiro, como os centros e as áreas que permitem várias opções de movimento (especialmente para o Leão e Tigre).
+   - **Mobilidade**: Peças que podem se mover mais livremente (como o Cavalo e Tigre) devem ser posicionadas em locais onde podem explorar várias oportunidades de captura.
+   - **Posicionamento de peças vulneráveis**: Evitar deixar peças vulneráveis, especialmente o Leão e Tigre, em posições onde podem ser facilmente capturadas. Ao mesmo tempo, deve-se buscar expor as peças adversárias à captura sem comprometer sua própria posição.
+
+### 3. **Heurísticas de Captura**
+   - **Catar o Leão**: O Leão é fundamental para a vitória, e uma heurística importante é focar em capturá-lo ou protegê-lo com outras peças.
+   - **Captura de peças fracas**: Aproveitar a chance de capturar peças menores (como Gato e Rato) pode ajudar a desequilibrar o jogo e reduzir as opções do oponente.
+   - **Catar o Elefante com o Rato**: Uma heurística única do jogo é a habilidade do Rato de capturar o Elefante, um poder que deve ser aproveitado para causar um grande impacto no jogo.
+
+### 4. **Heurísticas de Defesa**
+   - **Proteção das peças principais**: O Leão, Tigre e Elefante devem ser protegidos sempre que possível, posicionando peças menores em frente a elas para bloquear ou interceptar ataques.
+   - **Defesa de pontos-chave**: Certos pontos do tabuleiro, como as casas próximas ao centro ou as áreas onde a captura de uma peça chave possa ocorrer, devem ser defendidas com mais atenção.
+   - **Recuperação de peças capturadas**: Se uma peça importante for capturada (por exemplo, um Leão ou Tigre), a heurística pode ser focada na recuperação e em evitar que o oponente use essa vantagem.
+
+### 5. **Heurísticas de Tempo e Pressão**
+   - **Forçar o oponente a se mover de forma previsível**: Usar as peças mais móveis e potentes para exercer pressão sobre o oponente, fazendo com que ele seja forçado a tomar decisões desfavoráveis.
+   - **Atraso na movimentação do oponente**: Criar situações onde o oponente tenha poucas opções de movimento ou forçá-lo a mover peças sem grande valor ou com mobilidade limitada.
+
+### 6. **Heurísticas de Final de Jogo**
+   - **Redução de opções do oponente**: Quando muitas peças foram capturadas, a heurística pode ser ajustada para priorizar movimentos que forçam o adversário a se mover apenas de forma defensiva.
+   - **Posicionamento para capturar o Leão final**: Em fases finais do jogo, deve-se concentrar em posicionar peças de forma a capturar o Leão adversário ou colocá-lo em uma posição sem escape.
+
+### 7. **Heurísticas de Engano e Desinformação**
+   - **Desinformação e posicionamento estratégico**: Muitas vezes, o oponente pode ser enganado com movimentações que simulam uma estratégia de ataque em uma peça, enquanto na verdade você está preparando uma captura em outra área.
+   - **Simulação de fraco**: Utilizar o Rato ou Gato em movimentos que pareçam fracos ou desinteressantes pode forçar o adversário a tomar decisões erradas.
+
+Essas heurísticas podem ser usadas para ajudar a definir estratégias no jogo, baseadas em características simples e avaliações rápidas das situações do tabuleiro. Elas ajudam a moldar decisões rápidas e eficazes durante o jogo, sem a necessidade de calcular cada possível movimento ou resultado com precisão total.
