@@ -31,8 +31,8 @@ class animal():
                     return move(dir,next_pos)
                 if self.type_ != "Mouse":
                     return
-            if next_pos in (a:= state.animals[3-self.player]):
-                if self >= a[next_pos]:
+            if (a:= state.animals[3-self.player].get(next_pos)):
+                if self >= a:
                     return next_pos
                 return
             if next_pos in state.board.lairs[self.player]: return
