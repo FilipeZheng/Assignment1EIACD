@@ -1,4 +1,4 @@
-from s import *
+from game import *
 class Game():
     def __init__(self, player_1, player_2,board_=board0,p1_animals=INITIAL_P1_ANIMALS,p2_animals=INITIAL_P2_ANIMALS):
         self.board = board_
