@@ -71,7 +71,8 @@ def display(state):
     for pos,animal in pos_animals:
         sprite = a_sprites[(animal.rank,animal.player)]
         xyblit(screen,sprite,pos)
-def player(game):
+
+def human_player(game): #overwrites the original function as the original one becomes unnecessary
     def select():
         nonlocal moves,selected,play
         posx,posy = pygame.mouse.get_pos()
@@ -92,6 +93,7 @@ def player(game):
             for xy in moves:
                 xyblit(screen,dark,xy)
         pygame.display.flip()
+
     
     display(game.state)
     pygame.display.flip()
@@ -108,11 +110,29 @@ def player(game):
         clock.tick(10)
     
     if not running: game.state.winner = 3
+players["Human"] = human_player
 
 
-
+"""
+p2_animals = {(0,0):animal("Lion",2),           
+                    (6,0):animal("Tiger",2),
+                    (1,1):animal("Dog",2),
+                    (5,1):animal("Cat",2),
+                    (0,2):animal("Mouse",2),
+                    (2,2):animal("Leopard",2),
+                    (4,2):animal("Wolf",2),
+                    (6,2):animal("Elephant",2)},
+p1_animals={(0,6):animal("Elephant",1),
+                    (2,6):animal("Wolf",1),
+                    (4,6):animal("Leopard",1),
+                    (6,6):animal("Mouse",1),
+                    (1,7):animal("Cat",1),
+                    (5,7):animal("Dog",1),
+                    (0,8):animal("Tiger",1),
+                    (6,8):animal("Lion",1)}
+"""
 while running:
-    game = Game(player,player)
+    game = Game(players["Human"],players["AI1"])
     load_assets(game.board)
     game.start(True)
     running = False
