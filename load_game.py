@@ -1,4 +1,5 @@
 from game import *
+from players import *
 class Game():
     def __init__(self, player_1, player_2,board_=board0,p1_animals=INITIAL_P1_ANIMALS,p2_animals=INITIAL_P2_ANIMALS):
         self.board = board_
@@ -50,6 +51,6 @@ class Game():
 
 
 if __name__ == "__main__":
-    game = Game(player, player)
+    game = Game(players["Human"], players["Human"])
     game.run_match()
 
