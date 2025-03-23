@@ -159,19 +159,6 @@ class State():              #object with one state of the game
         return new_state
 
 
-def player(game):
-    #print(repr(game.state))
-    #print(game.state.available_moves)
-    print(f"Player {game.state.player}:")
-    while True:
-        i = input()
-        try:
-            x1,y1,x2,y2 = map(int,tuple(i))
-        except: pass
-        if (a:=((x1,y1),(x2,y2))) in game.state.available_moves:
-            break
-    game.state = game.state.move(a)
-
 
 
 
