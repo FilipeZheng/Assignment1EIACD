@@ -125,7 +125,7 @@ class State():              #object with one state of the game
         self.available_moves.clear()
         for pos,ani in self.animals[self.player].items():
             moves = ani.available_moves(pos,self)           
-            self.available_moves.update(moves)              # Another way of programming this would've been making the animals update the dict directly
+            self.available_moves.update(moves)              # Another way of programming this would've been making the animals update the dict directly, but having the animals creating a seperate dict helps for seeing the available moves a specific animal has
 
     def update_winner(self):
         if self.turns_since_last_capture >= 100:
