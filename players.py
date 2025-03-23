@@ -10,9 +10,9 @@ def execute_random_move(game):      #player function
 strengths = {"Elephant":10,"Lion":9,"Tiger":8,"Leopard":5,"Wolf":4,"Dog":3,"Cat":2,"Mouse":1}
 
 
-def heuristic(func):
+def heuristic(func,*args):        # Add this decorator to heuristic functions to make it automatically calculate the difference between the heuristic of both players. Heuristic functions with this decorator should have at least 2 arguments: the first one being the state of the game and the last one being the player
     def wrapper(state):
-        return func(state,1)-func(state,2)
+        return func(state,*args,player=1)-func(state,*args,player=2)    # *args is for in case the heuristic function requires more arguments than just the player and the state
     return wrapper
 
 @heuristic
