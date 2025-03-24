@@ -1,9 +1,9 @@
 from game import *
 from players import *
 class Game():
-    def __init__(self, player_1, player_2,board_=board0,p1_animals=INITIAL_P1_ANIMALS,p2_animals=INITIAL_P2_ANIMALS):
+    def __init__(self, player_1, player_2,board_=board0):
         self.board = board_
-        self.initial_state = State(board0,p1_animals,p2_animals)
+        self.initial_state = State(board_)
         self.player_1 = player_1
         self.player_2 = player_2
         self.log = []
