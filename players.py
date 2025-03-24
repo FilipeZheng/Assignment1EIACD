@@ -10,9 +10,10 @@ def execute_random_move(game):      #player function
 strengths = {"Elephant":10,"Lion":9,"Tiger":8,"Leopard":5,"Wolf":4,"Dog":3,"Cat":2,"Mouse":1}
 
 
-def heuristic(func,*args):        # Add this decorator to heuristic functions to make it automatically calculate the difference between the heuristic of both players. Heuristic functions with this decorator should have at least 2 arguments: the first one being the state of the game and the last one being the player
+# Maybe using decorators was a bad idea
+def heuristic(func):        # Add this decorator to heuristic functions to make it automatically calculate the difference between the heuristic of both players. Heuristic functions with this decorator should have at least 2 arguments: the first one being the state of the game and the last one being the player
     def wrapper(state):
-        return func(state,*args,player=1)-func(state,*args,player=2)    # *args is for in case the heuristic function requires more arguments than just the player and the state
+        return func(state,player=1)-func(state,player=2)    # *args is for in case the heuristic function requires more arguments than just the player and the state
     return wrapper
 
 @heuristic
@@ -47,16 +48,17 @@ def minimax(state, depth, alpha, beta, player, evaluate_func)->(list,int):
         if not depth: return (None,evaluate_func(state))
         if state.winner != -1: return (None,0) if state.winner == 0 else (None,float("-inf")*(-1)**state.winner)
         nextMove = None
+        moves = tuple(map(lambda move: (move,state.move(move)),state.available_moves))
         if player == 1:
-          for move in state.available_moves:
-            t=minimax(state.move(move),depth-1,alpha,beta,3-player,evaluate_func)[1]
+          for move,new_state in sorted(moves,key=lambda x:-evaluate_func(x[1])):
+            t=minimax(new_state,depth-1,alpha,beta,3-player,evaluate_func)[1]
             if t>=beta:
               return (move,t+1)
             if t>alpha:
               alpha=t
               nextMove = move
         elif player == 2:
-          for move in state.available_moves:
+          for move,new_state in sorted(moves,key=lambda x:evaluate_func(x[1])):
             t=minimax(state.move(move),depth-1,alpha,beta,3-player,evaluate_func)[1]
             if t<=alpha:
               return (move,t-1)
@@ -122,3 +124,4 @@ players = {"Human":human_player,             #This dict will be read for choosin
            "Random":execute_random_move,
            "AI1":execute_minimax_move(pos_STR_heuristic,4)
            }   
+
