@@ -66,6 +66,7 @@ def xyblit(screen,img,xy:tuple):
     screen.blit(img,(x*tile_size+5,y*tile_size+5))
 
 def display(state):
+    screen.fill((255,255,255))
     screen.blit(bg,(0,0))
     pos_animals = (animal for dict in state.animals.values() for animal in dict.items())
     for pos,animal in pos_animals:
@@ -101,12 +102,15 @@ def human_player(game): #overwrites the original function as the original one be
     selected = None
     global running
     play = True
+    board_y = game.state.board.height*tile_size
     while running and play:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                select()
+                posx,posy = pygame.mouse.get_pos()
+                if posy < board_y:
+                    select()
         clock.tick(10)
     
     if not running: game.state.winner = 3
@@ -114,7 +118,7 @@ players["Human"] = human_player
 
 
 """
-p2_animals = {(0,0):animal("Lion",2),           
+board0.animals[2] = {(0,0):animal("Lion",2),           
                     (6,0):animal("Tiger",2),
                     (1,1):animal("Dog",2),
                     (5,1):animal("Cat",2),
@@ -122,7 +126,7 @@ p2_animals = {(0,0):animal("Lion",2),
                     (2,2):animal("Leopard",2),
                     (4,2):animal("Wolf",2),
                     (6,2):animal("Elephant",2)},
-p1_animals={(0,6):animal("Elephant",1),
+board0.animals[1]={(0,6):animal("Elephant",1),
                     (2,6):animal("Wolf",1),
                     (4,6):animal("Leopard",1),
                     (6,6):animal("Mouse",1),
@@ -132,7 +136,7 @@ p1_animals={(0,6):animal("Elephant",1),
                     (6,8):animal("Lion",1)}
 """
 while running:
-    game = Game(players["Human"],players["AI1"])
+    game = Game(players["Human"],players["AI1"],board1)
     load_assets(game.board)
     game.start(True)
     running = False
