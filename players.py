@@ -47,9 +47,23 @@ def pos_STR_heuristic(state,player):
         else:
             strength = strengths[animal.type_]
         x,y = pos
-        sum += strength*(15-(abs(objx-x)+abs(objy-y)))
+        sum += strength*(max_dist-(abs(objx-x)+abs(objy-y)))
     return sum
-  
+
+@heuristic
+def pos_STR_heuristic1(state,player):        #this heuristic function is supposed to value more moving forward pieces that are already close to the opposite lair even closer, and therefore also valuing more stopping the enemy from getting close
+    max_dist = 100                #This value gets divided by the distance, it's the maximum coefficient possible
+    global strengths
+    sum = 0
+    for i in state.board.lairs[3-player]: objx,objy = i
+    for pos,animal in state.animals[player].items():
+        if animal.type_ == "Elephant":
+             strength = Elephant_strength(state,pos,player)
+        else:
+            strength = strengths[animal.type_]
+        x,y = pos
+        sum += strength*(max_dist//(abs(objx-x)+abs(objy-y)))  
+    return sum
 # There are more heuristic functions to make
 
 def execute_minimax_move(evaluate_func, depth):
@@ -137,6 +151,7 @@ def human_player(game):
 
 players = {"Human":human_player,             #This dict will be read for choosing the players who are going to play the game
            "Random":execute_random_move,
-           "AI1":execute_minimax_move(pos_STR_heuristic,4)
+           "AI1":execute_minimax_move(pos_STR_heuristic,4),
+           "AI2":execute_minimax_move(pos_STR_heuristic1,4)
            }   
 
