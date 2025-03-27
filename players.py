@@ -9,6 +9,13 @@ def execute_random_move(game):      #player function
 # The following dict is for heuristic funtions
 strengths = {"Elephant":10,"Lion":9,"Tiger":8,"Leopard":5,"Wolf":4,"Dog":3,"Cat":2,"Mouse":1}
 
+def Elephant_strength(state,pos,player):
+    x,y = pos
+    for pos1,animal in state.animals[3-player]:
+        if animal.type_ = "Mouse":
+            x1,y1 = po1
+            return 4+min(5,abs(x1-x)+abs(y1-y))
+    return 10
 
 # Maybe using decorators was a bad idea
 def heuristic(func):        # Add this decorator to heuristic functions to make it automatically calculate the difference between the heuristic of both players. Heuristic functions with this decorator should have at least 2 arguments: the first one being the state of the game and the last one being the player
@@ -20,8 +27,12 @@ def heuristic(func):        # Add this decorator to heuristic functions to make 
 def strength_heuristic(state,player):
     global strengths
     sum = 0
-    for animal in state.animals[player].values():
-        sum += strengths[animal.type_]
+    for pos,animal in state.animals[player].items():
+        if animal.type_ == "Elephant":
+             strength = Elephant_strength(state,pos,player)
+        else:
+            strength = strengths[animal.type_]
+        sum += strength
     return sum
 
 @heuristic
@@ -31,8 +42,12 @@ def pos_STR_heuristic(state,player):
     sum = 0
     for i in state.board.lairs[3-player]: objx,objy = i
     for pos,animal in state.animals[player].items():
+        if animal.type_ == "Elephant":
+             strength = Elephant_strength(state,pos,player)
+        else:
+            strength = strengths[animal.type_]
         x,y = pos
-        sum += strengths[animal.type_]*(15-(abs(objx-x)+abs(objy-y)))
+        sum += strength*(15-(abs(objx-x)+abs(objy-y)))
     return sum
   
 # There are more heuristic functions to make
