@@ -11,59 +11,93 @@ strengths = {"Elephant":10,"Lion":9,"Tiger":8,"Leopard":5,"Wolf":4,"Dog":3,"Cat"
 
 def Elephant_strength(state,pos,player):
     x,y = pos
-    for pos1,animal in state.animals[3-player]:
-        if animal.type_ = "Mouse":
-            x1,y1 = po1
-            return 4+min(5,abs(x1-x)+abs(y1-y))
+    for pos1,animal in state.animals[3-player].items():
+        if animal.type_ == "Mouse":
+            return 7
+            #x1,y1 = pos1
+            #return 6+min(4,max(abs(x1-x)+abs(y1-y),2))
     return 10
 
+def find_strength(state,pos,player,animal):
+        global strenghts
+        if animal.type_ == "Elephant":
+            return Elephant_strength(state,pos,player)
+        else:
+            return strengths[animal.type_]
+
+cache = {}
+
+def store(func):        #decorator that stores function calls in cache
+    def wrapper(*arg):
+        global cache
+        h = hash((func,*arg))
+        if (t:=cache.get(h)): return t
+        r = func(*arg)
+        cache[h] = r
+        return r
+    return wrapper
 # Maybe using decorators was a bad idea
+@store
 def heuristic(func):        # Add this decorator to heuristic functions to make it automatically calculate the difference between the heuristic of both players. Heuristic functions with this decorator should have at least 2 arguments: the first one being the state of the game and the last one being the player
     def wrapper(state):
-        return func(state,player=1)-func(state,player=2)    # *args is for in case the heuristic function requires more arguments than just the player and the state
+        if state.winner != -1: return 0 if state.winner == 0 else float("-inf")*(-1)**state.winner
+        r = func(state,player=1)-func(state,player=2)
+        return r
     return wrapper
 
 @heuristic
+def number_heuristic(state,player):     #Used for valuing having animals, should be used with other heuristics to dilute the weight of STR
+    return len(state.animals[player])
+
+
+@heuristic
 def strength_heuristic(state,player):
-    global strengths
+    global find_strength
     sum = 0
     for pos,animal in state.animals[player].items():
-        if animal.type_ == "Elephant":
-             strength = Elephant_strength(state,pos,player)
-        else:
-            strength = strengths[animal.type_]
+        strength = find_strength(state,pos,player,animal)
         sum += strength
     return sum
 
 @heuristic
-def pos_STR_heuristic(state,player):
-    max_dist = 15
-    global strengths
+def pos_STR_heuristic(state,player):    #This heuristic weights around 0.25 times the strength one
+    max_dist = state.board.height<<1 + state.board.width
+    global find_strength
     sum = 0
     for i in state.board.lairs[3-player]: objx,objy = i
     for pos,animal in state.animals[player].items():
-        if animal.type_ == "Elephant":
-             strength = Elephant_strength(state,pos,player)
-        else:
-            strength = strengths[animal.type_]
+        strength = find_strength(state,pos,player,animal)
         x,y = pos
-        sum += strength*(max_dist-(abs(objx-x)+abs(objy-y)))
+        dist = abs(objx-x)+abs(objy-y)
+        sum += strength*((max_dist-dist)/max_dist)
     return sum
 
 @heuristic
 def pos_STR_heuristic1(state,player):        #this heuristic function is supposed to value more moving forward pieces that are already close to the opposite lair even closer, and therefore also valuing more stopping the enemy from getting close
-    max_dist = 100                #This value gets divided by the distance, it's the maximum coefficient possible
-    global strengths
+    global find_strength	        #This heuristic function weights on average around 0.2 times the strength one 
+    max_dist = state.board.height + state.board.width/2
     sum = 0
     for i in state.board.lairs[3-player]: objx,objy = i
     for pos,animal in state.animals[player].items():
-        if animal.type_ == "Elephant":
-             strength = Elephant_strength(state,pos,player)
-        else:
-            strength = strengths[animal.type_]
+        strength = find_strength(state,pos,player,animal)
         x,y = pos
-        sum += strength*(max_dist//(abs(objx-x)+abs(objy-y)))  
+        dist = abs(objx-x)+abs(objy-y)-1
+        if dist == 0: return float("inf") 
+        sum += strength*(max_dist/(max_dist+dist*9))
     return sum
+
+@heuristic
+def mobility_heuristic(state,player):
+    if state.player == player: return len(state.available_moves)
+    return len(i for pos,animal in state.animals[3-player].items() for i in animal.available_moves(pos,state))
+
+@store
+def heuristic1(state):
+    return pos_STR_heuristic(state)   
+
+@store
+def heuristic2(state):
+    return number_heuristic(state) + strength_heuristic(state) + 5*pos_STR_heuristic1(state)
 # There are more heuristic functions to make
 
 def execute_minimax_move(evaluate_func, depth):
@@ -94,42 +128,8 @@ def minimax(state, depth, alpha, beta, player, evaluate_func)->(list,int):
             if t<beta:
               nextMove = move
               beta=t
-        return (nextMove if nextMove else random.choice(tuple(state.available_moves)),alpha if player==1 else beta)
-
-""" #The following program is an attempt at making minimax random when choosing between two moves that seem to have equal outcomes
-def execute_minimax_move(evaluate_func, depth):     #This is for generating a player
-    def execute(game):                                  # This is the function the function will return
-      move = minimax(game.state,depth,float("-inf"),float("inf"),game.state.player,evaluate_func)[0]
-      game.state=game.state.move(random.choice(move))   # I decided that the AI would randomly choose a move from the best possible moves to allow some changes in the outcomes of the game when simulating multiple times the same match with the same minimax AIs
-    return execute
-
-
-def minimax(state, depth, alpha, beta, player, evaluate_func)->(list,int):
-        if not depth: return ([],evaluate_func(state))
-        if state.winner != -1: return ([],0) if state.winner == 0 else ([],float("-inf")*(-1)**state.winner)
-        nextMove = []
-        if player == 1:
-          for move in state.available_moves:
-            t=minimax(state.move(move),depth-1,alpha,beta,3-player,evaluate_func)[1]
-            if t>=beta:
-              return ([move],t+1)
-            if t>alpha:
-              alpha=t
-              nextMove = [move]
-            elif t== alpha:
-              nextMove.append(move)
-        elif player == 2:
-          for move in state.available_moves:
-            t=minimax(state.move(move),depth-1,alpha,beta,3-player,evaluate_func)[1]
-            if t<=alpha:
-              return ([move],t-1)
-            if t<beta:
-              nextMove = [move]
-              beta=t
-            elif t==beta:
-              nextMove.append(move)
+        if not nextMove: nextMove = random.choice(tuple(state.available_moves))
         return (nextMove,alpha if player==1 else beta)
-"""
 
 
 #minimax(State(board0,INITIAL_P1_ANIMALS,INITIAL_P2_ANIMALS),2,float("-inf"),float("inf"),1,pos_STR_heuristic)
@@ -152,6 +152,7 @@ def human_player(game):
 players = {"Human":human_player,             #This dict will be read for choosing the players who are going to play the game
            "Random":execute_random_move,
            "AI1":execute_minimax_move(pos_STR_heuristic,4),
-           "AI2":execute_minimax_move(pos_STR_heuristic1,4)
+           "AI2":execute_minimax_move(heuristic1,4),
+           "AI3":execute_minimax_move(heuristic2,4)
            }   
 
