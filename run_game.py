@@ -156,7 +156,7 @@ Game.start = new_func
 running = True
 
 while running:
-    game = Game(players["AI3"],players["AI2"],board0)
+    game = Game(players["Human"],players["AI2"],board0)
     load_assets(game.board)
     game.start(True)
     running = False
