@@ -7,8 +7,9 @@ class animal():
         self.isInTrap = False
         self.isInWater = False
         self.canJump = True if type_ in ("Lion","Tiger") else False
+        self.str = f"{chr(-self.rank+40+self.player*32)}"
     def __str__(self):              #currently a placeholder
-        return f"{chr(-self.rank+40+self.player*32)}"
+        return self.str
 
     def __le__(self,other):         #this allows operations such as animal1 <= animal2 for comparing if an animal can capture another one
         if not isinstance(other,animal):
@@ -44,6 +45,8 @@ class animal():
                 moves.add((cur_pos,next_pos))
         return moves
 
+    def __hash__(self):
+        return hash(self.str)
 
 class board:        # used for representing the initial board, does not include the animals
     def __init__(self,empty_board:list,initial_p1_animals,initial_p2_animals):
@@ -53,13 +56,15 @@ class board:        # used for representing the initial board, does not include 
         self.traps = {1:set(),2:set()}      # traps in 1 represent traps where player1 is vulnerable
         self.lairs = {1:set(),2:set()}      # lairs in 1 represent the goals of player2
         trans = str.maketrans("012345","._##OO")    # 1 represents water, 2: p1_traps, 3: p2_traps, 4: p1_lair, 5: p2_lair
-        self.empty_board = [s.translate(trans) for s in empty_board]
+        self.empty_board = tuple(s.translate(trans) for s in empty_board)
         for y,row in enumerate(empty_board):
             for x,tile in enumerate(row):
                 if tile != "0":
                     {"1":self.water,"2":self.traps[1],"3":self.traps[2],"4":self.lairs[1],"5":self.lairs[2]}[tile].add((x,y))
 
         self.animals = {1:initial_p1_animals,2:initial_p2_animals} #the choic of using a dict is for making selecting animals easier
+    def __hash__(self):
+        return hash((tuple(self.animals[1].items()),tuple(self.animals[2].items())))
 
 INITIAL_P2_ANIMALS = {(0,0):animal("Lion",2),           #the dictionaries contain the coordinates of every animal and their coordinates as the keys
                     (6,0):animal("Tiger",2),            #dictionaries are useful for checking if a tile has an animal and to know where a player has animals
@@ -141,6 +146,7 @@ class State():              #object with one state of the game
         self.update_available_moves()   #func that is defined below
         self.winner = -1
         self.turns_since_last_capture = 0
+        self.hash = hash(self.board)
 
     def update_available_moves(self):                   #adds the elements to the dict
         self.available_moves.clear()
@@ -177,8 +183,11 @@ class State():              #object with one state of the game
         new_state.player = 3-self.player
         new_state.update_available_moves()
         new_state.update_winner()
+        new_state.hash = hash(new_state.board)
         return new_state
 
+    def __hash__(self):
+        return self.hash
 
 
 
