@@ -24,7 +24,7 @@ class animal():
         def move(dir,cur_pos):          #returns None if the movement is invalid and the target pos if the movement is valid
             x,y = cur_pos
             next_pos = (x+dir[0],y+dir[1])
-            if next_pos[0]<0 or next_pos[0]>=state.board.length or next_pos[1]<0 or next_pos[1]>=state.board.height: return
+            if next_pos[0]<0 or next_pos[0]>=state.board.width or next_pos[1]<0 or next_pos[1]>=state.board.height: return
             if next_pos in state.animals[self.player]: return               # cannot move to a tile with an animal of the same player
             if next_pos in state.board.water:
                 if self.canJump and not next_pos in state.animals[3-self.player]: # checks in case the animal can jump and whether there is a mouse in the water
@@ -47,7 +47,7 @@ class animal():
 
 class board:        # used for representing the initial board, does not include the animals
     def __init__(self,empty_board:list,initial_p1_animals,initial_p2_animals):
-        self.length = len(empty_board[0])
+        self.width = len(empty_board[0])
         self.height = len(empty_board)
         self.water = set()
         self.traps = {1:set(),2:set()}      # traps in 1 represent traps where player1 is vulnerable
@@ -158,7 +158,7 @@ class State():              #object with one state of the game
                 self.winner = 3-self.player
 
     def __repr__(self):                 #used for converting into a string using the repr() function, may delete this because the code isn't very readable, a display function should do the trick
-        return "\n".join("".join(str(a[(x,y)]) if (x,y) in (a:=self.animals[1]) else str(a[(x,y)]) if (x,y) in (a:=self.animals[2]) else self.board.empty_board[y][x] for x in range(self.board.length)) for y in range(self.board.height))
+        return "\n".join("".join(str(a[(x,y)]) if (x,y) in (a:=self.animals[1]) else str(a[(x,y)]) if (x,y) in (a:=self.animals[2]) else self.board.empty_board[y][x] for x in range(self.board.width)) for y in range(self.board.height))
 
 
     def move(self,move):
