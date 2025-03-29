@@ -20,7 +20,7 @@ class Game():
         while True:
             if log_moves:
                 print(repr(self.state))
-                self.play()
+            self.play()
             if log_game:
                 game_log.append(self.state)
             if (w:=self.state.winner) != -1:
