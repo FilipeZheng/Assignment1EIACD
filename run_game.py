@@ -8,13 +8,13 @@ path = os.path.dirname(__file__)
 window_x = 490
 window_y = 710
 
-dir = "assets"
+dir = "Assetsfinal"
 screen = pygame.display.set_mode((window_x,window_y))
 pygame.display.set_caption("Jungle")
 
 def load_assets(board_):
     global bg,a_sprites,tile_size,ldark,dark
-    maxx,maxy = board_.length,board_.height
+    maxx,maxy = board_.width,board_.height
     tile_size = min(window_x//maxx,(window_y-80)//maxy)
     sprite_dimensions = (a:=tile_size-10,a)
     def load_sprite(file):
@@ -59,19 +59,24 @@ pygame.display.flip()
 
 clock = pygame.time.Clock()
 
-running = True
-
 def xyblit(screen,img,xy:tuple):
     x,y = xy
     screen.blit(img,(x*tile_size+5,y*tile_size+5))
 
 def display(state):
+    global screen
     screen.fill((255,255,255))
     screen.blit(bg,(0,0))
     pos_animals = (animal for dict in state.animals.values() for animal in dict.items())
     for pos,animal in pos_animals:
         sprite = a_sprites[(animal.rank,animal.player)]
         xyblit(screen,sprite,pos)
+    pygame.display.flip()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+            state.winner = 3
+
 
 def human_player(game): #overwrites the original function as the original one becomes unnecessary
     def select():
@@ -135,8 +140,24 @@ board0.animals[1]={(0,6):animal("Elephant",1),
                     (0,8):animal("Tiger",1),
                     (6,8):animal("Lion",1)}
 """
+
+#changing some functions in Game to make them display the game
+old_play = Game.play
+def new_func(self):
+    old_play(self)
+    display(self.state)
+Game.play = new_func
+
+old_start = Game.start
+def new_func(self,*arg):
+    display(self.initial_state)
+    old_start(self,*arg)
+Game.start = new_func
+
+running = True
+
 while running:
-    game = Game(players["Human"],players["AI1"],board1)
+    game = Game(players["Human"],players["AI2"],board0)
     load_assets(game.board)
     game.start(True)
     running = False
