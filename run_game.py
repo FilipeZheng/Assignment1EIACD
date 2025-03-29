@@ -71,12 +71,11 @@ def display(state):
     for pos,animal in pos_animals:
         sprite = a_sprites[(animal.rank,animal.player)]
         xyblit(screen,sprite,pos)
-    pygame.display.flip()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
             state.winner = 3
-
+    pygame.display.flip()
 
 def human_player(game): #overwrites the original function as the original one becomes unnecessary
     def select():
@@ -157,7 +156,7 @@ Game.start = new_func
 running = True
 
 while running:
-    game = Game(players["Human"],players["AI2"],board0)
+    game = Game(players["AI3"],players["AI2"],board0)
     load_assets(game.board)
     game.start(True)
     running = False
