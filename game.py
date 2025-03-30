@@ -63,8 +63,7 @@ class board:        # used for representing the initial board, does not include 
                     {"1":self.water,"2":self.traps[1],"3":self.traps[2],"4":self.lairs[1],"5":self.lairs[2]}[tile].add((x,y))
 
         self.animals = {1:initial_p1_animals,2:initial_p2_animals} #the choic of using a dict is for making selecting animals easier
-    def __hash__(self):
-        return hash((tuple(self.animals[1].items()),tuple(self.animals[2].items())))
+
 
 INITIAL_P2_ANIMALS = {(0,0):animal("Lion",2),           #the dictionaries contain the coordinates of every animal and their coordinates as the keys
                     (6,0):animal("Tiger",2),            #dictionaries are useful for checking if a tile has an animal and to know where a player has animals
@@ -99,13 +98,14 @@ board0 = board(["0025200",
 board1 = board(["02520",
                 "00200",
                 "01010",
+                "01010",
                 "00300",
                 "03430"
                 ],
-                {(4,4):animal("Lion",1),
-                (0,4):animal("Tiger",1),
-                (3,3):animal("Elephant",1),
-                (1,3):animal("Mouse",1)
+                {(4,5):animal("Lion",1),
+                (0,5):animal("Tiger",1),
+                (3,4):animal("Elephant",1),
+                (1,4):animal("Mouse",1)
                 }
                ,
                {(0,0):animal("Lion",2),
@@ -138,16 +138,16 @@ LAIRS = {2:(3,0),1:(3,8)}
 
 
 class State():              #object with one state of the game
-    def __init__(self,board_):
+    def __init__(self,board_,animals=None,*,player=1):
         self.board = board_
-        self.animals = self.board.animals   #made for selecting animals easier as the animals weren't originally stored in the board
-        self.player = 1                 # player refers to the player who's going to make the next play
+        self.animals = animals or board_.animals   #made for selecting animals easier as the animals weren't originally stored in the board
+        self.player = player                 # player refers to the player who's going to make the next play
         self.available_moves = set()    # the format of the moves in the set is (start,dest)
         self.update_available_moves()   #func that is defined below
         self.winner = -1
         self.turns_since_last_capture = 0
-        self.hash = hash(self.board)
-
+        self.hash = hash((tuple(self.animals[1].items()),tuple(self.animals[2].items())))
+    
     def update_available_moves(self):                   #adds the elements to the dict
         self.available_moves.clear()
         for pos,ani in self.animals[self.player].items():
@@ -168,22 +168,21 @@ class State():              #object with one state of the game
 
 
     def move(self,move):
-        new_state = deepcopy(self)
+        #new_state = deepcopy(self)
         start,dest = move
-        p_animals = new_state.animals[self.player]
+        new_animals = deepcopy(self.animals)
+        p_animals = new_animals[self.player]
         p_animals[dest] = p_animals[start]
         p_animals[dest].isInTrap = True if dest in self.board.traps[self.player] else False
         p_animals[dest].isInWater = True if dest in self.board.water else False
-
         del p_animals[start]
-        if dest in (o_animals := new_state.animals[3-self.player]):
+        if dest in (o_animals := new_animals[3-self.player]):
             del o_animals[dest]
-            new_state.turns_since_last_capture = 0
-        else: new_state.turns_since_last_capture += 1
-        new_state.player = 3-self.player
-        new_state.update_available_moves()
+            last_capture = 0
+        else: last_capture = self.turns_since_last_capture + 1
+        new_state = State(self.board,new_animals,player=3-self.player)
+        new_state.turns_since_last_capture = last_capture
         new_state.update_winner()
-        new_state.hash = hash(new_state.board)
         return new_state
 
     def __hash__(self):
