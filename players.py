@@ -13,9 +13,8 @@ def Elephant_strength(state,pos,player):
     x,y = pos
     for pos1,animal in state.animals[3-player].items():
         if animal.type_ == "Mouse":
-            return 7
-            #x1,y1 = pos1
-            #return 6+min(4,max(abs(x1-x)+abs(y1-y),2))
+            x1,y1 = pos1
+            return 7+min(3,max(abs(x1-x)+abs(y1-y),2))
     return 10
 
 def find_strength(state,pos,player,animal):
@@ -69,6 +68,7 @@ def pos_STR_heuristic(state,player):    #This heuristic weights around 0.25 time
         strength = find_strength(state,pos,player,animal)
         x,y = pos
         dist = abs(objx-x)+abs(objy-y)
+        if dist == 1: return 1000 
         sum += strength*((max_dist-dist)/max_dist)
     return sum
 
@@ -82,7 +82,7 @@ def pos_STR_heuristic1(state,player):        #this heuristic function is suppose
         strength = find_strength(state,pos,player,animal)
         x,y = pos
         dist = abs(objx-x)+abs(objy-y)-1
-        if dist == 0: return float("inf") 
+        if dist == 0: return 1000 
         sum += strength*(max_dist/(max_dist+dist*9))
     return sum
 
@@ -93,7 +93,7 @@ def mobility_heuristic(state,player):
 
 @store
 def heuristic1(state):
-    return pos_STR_heuristic(state)   
+    return pos_STR_heuristic(state)*5 + pos_STR_heuristic(state)
 
 @store
 def heuristic2(state):
