@@ -7,15 +7,15 @@ def execute_random_move(game):      #player function
     game.state = game.state.move(move)
 
 # The following dict is for heuristic funtions
-strengths = {"Elephant":10,"Lion":9,"Tiger":8,"Leopard":5,"Wolf":4,"Dog":3,"Cat":2,"Mouse":1}
+strengths = {"Elephant":11,"Lion":11,"Tiger":10,"Leopard":6,"Wolf":5,"Dog":4,"Cat":3,"Mouse":2}
 
 def Elephant_strength(state,pos,player):
     x,y = pos
     for pos1,animal in state.animals[3-player].items():
         if animal.type_ == "Mouse":
             x1,y1 = pos1
-            return 7+min(3,max(abs(x1-x)+abs(y1-y),2))
-    return 10
+            return 9+min(5,max(abs(x1-x)+abs(y1-y),2))
+    return 15
 
 def find_strength(state,pos,player,animal):
         global strenghts
@@ -24,6 +24,11 @@ def find_strength(state,pos,player,animal):
         else:
             return strengths[animal.type_]
 
+def is_not_defended(state,pos,player):
+    for pos1,animal in state.animals[3-player].items():
+        if pos in map(lambda x: x[1],animal.available_moves(pos1,state)):
+            return 0
+    return 1
 cache = {}
 
 def store(func):        #decorator that stores function calls in cache
@@ -59,8 +64,8 @@ def strength_heuristic(state,player):
     return sum
 
 @heuristic
-def pos_STR_heuristic(state,player):    #This heuristic weights around 0.25 times the strength one
-    max_dist = state.board.height<<1 + state.board.width
+def pos_STR_heuristic(state,player):    #This heuristic weights around 0.2 times the strength one
+    max_dist = state.board.height + state.board.width/2
     global find_strength
     sum = 0
     for i in state.board.lairs[3-player]: objx,objy = i
@@ -68,7 +73,7 @@ def pos_STR_heuristic(state,player):    #This heuristic weights around 0.25 time
         strength = find_strength(state,pos,player,animal)
         x,y = pos
         dist = abs(objx-x)+abs(objy-y)
-        if dist == 1: return 1000 
+        if dist == 1: return 1000*is_not_defended(state,pos,player) 
         sum += strength*((max_dist-dist)/max_dist)
     return sum
 
@@ -82,7 +87,7 @@ def pos_STR_heuristic1(state,player):        #this heuristic function is suppose
         strength = find_strength(state,pos,player,animal)
         x,y = pos
         dist = abs(objx-x)+abs(objy-y)-1
-        if dist == 0: return 1000 
+        if dist == 0: return 1000*is_not_defended(state,pos,player)
         sum += strength*(max_dist/(max_dist+dist*9))
     return sum
 
@@ -91,13 +96,69 @@ def mobility_heuristic(state,player):
     if state.player == player: return len(state.available_moves)
     return len(i for pos,animal in state.animals[3-player].items() for i in animal.available_moves(pos,state))
 
+@heuristic
+def mobility_heuristic1(state,player):   #This heuristic counts the amount of moves an animal can make and how beneficial those move are, it's a way of seeing more into the future without increasing the depth of minimax
+    global find_strength	        #This heuristic function may weight on average around 0.5 times the strength one 
+    max_dist = state.board.height + state.board.width/2
+    sum = 0
+    for i in state.board.lairs[3-player]: objx,objy = i
+    for pos1,animal in state.animals[player].items():
+        strength = find_strength(state,pos1,player,animal)
+        for pos in animal.available_moves(pos1,state):
+            x,y = pos[1]
+            dist = abs(objx-x)+abs(objy-y)-1
+            sum += strength*(max_dist/(max_dist+dist*9))
+    return sum
+
+@heuristic
+def mobility_heuristic2(state,player):   #This heuristic values the potential to move forward rather than the amount of possible moves
+    global find_strength	        #This heuristic function may weight on average around 0.2 times the strength one 
+    max_dist = state.board.height + state.board.width/2
+    sum = 0
+    for i in state.board.lairs[3-player]: objx,objy = i
+    for pos1,animal in state.animals[player].items():
+        strength = find_strength(state,pos1,player,animal)
+        x1,y1 = pos1
+        min_dist = abs(objx-x1)+abs(objy-y1)-1
+        for pos in animal.available_moves(pos1,state):
+            x,y = pos[1]
+            dist = abs(objx-x)+abs(objy-y)-1
+            if dist == 0: sum += 100*is_not_defended(state,pos,player); break
+            if dist < min_dist: min_dist = dist
+        sum += strength*(max_dist/(max_dist+min_dist*9))
+    return sum
+
+@heuristic
+def mobility_heuristic3(state,player):   #This heuristic values the potential to move forward rather than the amount of possible moves
+    global find_strength	        #This heuristic function may weight on average around 0.2 times the strength one 
+    max_dist = state.board.height + state.board.width/2
+    sum = 0
+    for i in state.board.lairs[3-player]: objx,objy = i
+    for pos1,animal in state.animals[player].items():
+        strength = find_strength(state,pos1,player,animal)
+        x1,y1 = pos1
+        min_dist = abs(objx-x1)+abs(objy-y1)
+        for pos in animal.available_moves(pos1,state):
+            x,y = pos[1]
+            dist = abs(objx-x)+abs(objy-y)
+            if dist < min_dist: min_dist = dist
+            if dist == 1: sum += 100*is_not_defended(state,pos,player); break
+        sum += strength*((max_dist-min_dist)/max_dist)
+    return sum
+
 @store
 def heuristic1(state):
-    return pos_STR_heuristic(state)*5 + pos_STR_heuristic(state)
+    return number_heuristic(state)+pos_STR_heuristic(state)*5.0 + 2.5*mobility_heuristic2(state)
 
 @store
 def heuristic2(state):
-    return number_heuristic(state) + strength_heuristic(state) + 5*pos_STR_heuristic1(state)
+    return number_heuristic(state)*2 + strength_heuristic(state) + 5*pos_STR_heuristic1(state)
+
+@store
+def heuristic3(state):
+    return strength_heuristic(state)+pos_STR_heuristic(state)*3 + 5*mobility_heuristic2(state)
+
+
 # There are more heuristic functions to make
 
 def execute_minimax_move(evaluate_func, depth):
@@ -152,7 +213,7 @@ def human_player(game):
 players = {"Human":human_player,             #This dict will be read for choosing the players who are going to play the game
            "Random":execute_random_move,
            "AI1":execute_minimax_move(pos_STR_heuristic,4),
-           "AI2":execute_minimax_move(heuristic1,4),
-           "AI3":execute_minimax_move(heuristic2,4)
+           "AI2":execute_minimax_move(heuristic3,4),
+           "AI3":execute_minimax_move(heuristic1,4)
            }   
 
