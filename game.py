@@ -6,7 +6,6 @@ class animal():
         self.rank = ["Mouse","Cat","Dog","Wolf","Leopard","Tiger","Lion","Elephant"].index(type_)       #using a dictionary is perhaps better
         self.isInTrap = False
         self.isInWater = False
-        self.canJump = True if type_ in ("Lion","Tiger") else False
         self.str = f"{chr(-self.rank+40+self.player*32)}"
     def __str__(self):              #currently a placeholder
         return self.str
@@ -28,7 +27,7 @@ class animal():
             if next_pos[0]<0 or next_pos[0]>=state.board.width or next_pos[1]<0 or next_pos[1]>=state.board.height: return
             if next_pos in state.animals[self.player]: return               # cannot move to a tile with an animal of the same player
             if next_pos in state.board.water:
-                if self.canJump and not next_pos in state.animals[3-self.player]: # checks in case the animal can jump and whether there is a mouse in the water
+                if self.type_ in ("Lion","Tiger") and not next_pos in state.animals[3-self.player]: # checks in case the animal can jump and whether there is a mouse in the water
                     return move(dir,next_pos)
                 if self.type_ != "Mouse":
                     return
@@ -147,6 +146,7 @@ class State():              #object with one state of the game
         self.winner = -1
         self.turns_since_last_capture = 0
         self.hash = hash((tuple(self.animals[1].items()),tuple(self.animals[2].items())))
+        self.children_cache = {}
     
     def update_available_moves(self):                   #adds the elements to the dict
         self.available_moves.clear()
@@ -168,7 +168,7 @@ class State():              #object with one state of the game
 
 
     def move(self,move):
-        #new_state = deepcopy(self)
+        if t:=self.children_cache.get(move): return t
         start,dest = move
         new_animals = deepcopy(self.animals)
         p_animals = new_animals[self.player]
@@ -183,6 +183,7 @@ class State():              #object with one state of the game
         new_state = State(self.board,new_animals,player=3-self.player)
         new_state.turns_since_last_capture = last_capture
         new_state.update_winner()
+        self.children_cache[move]=new_state
         return new_state
 
     def __hash__(self):
