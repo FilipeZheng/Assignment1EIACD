@@ -24,9 +24,6 @@ def load_assets(board_):
     animals = ("Mouse","Cat","Dog","Wolf","Leopard","Tiger","Lion","Elephant")
     a_sprites = {(rank,i):load_sprite(f"{animal}{i}.png") for rank,animal in enumerate(animals) for i in (1,2)}
 
-    #bg = pygame.image.load(os.path.join(path,dir,"bg.png"))
-    #bg = pygame.transform.scale(bg,(window_x,window_y-80))
-
     bg = pygame.Surface((tile_size*maxx,tile_size*maxy))
 
 
@@ -65,12 +62,20 @@ def xyblit(screen,img,xy:tuple):
 
 def display(state):
     global screen
-    screen.fill((255,255,255))
+    screen.fill((122,22,22))
     screen.blit(bg,(0,0))
     pos_animals = (animal for dict in state.animals.values() for animal in dict.items())
     for pos,animal in pos_animals:
         sprite = a_sprites[(animal.rank,animal.player)]
         xyblit(screen,sprite,pos)
+        
+    font = pygame.font.Font(None, 80)
+    if state.winner == -1:
+        player_text = font.render(f"Player {state.player}", True, (255, 255, 255))
+    else:
+        player_text = font.render(f"Winner: {3-state.player}", True, (255, 255, 255))
+    screen.blit(player_text,(10,window_y-70))
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -155,9 +160,16 @@ Game.start = new_func
 
 running = True
 
+def post_game(game):
+    display(game.state)
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
 while running:
-    game = Game(players["Human"],players["AI2"],board0)
+    game = Game(players["AI3"],players["AI2"],board0)
     load_assets(game.board)
     game.start(True)
-    running = False
+    post_game(game)
 pygame.quit()
