@@ -203,7 +203,7 @@ def post_game(game):
     clock.tick(10)
 
 while running:
-    game = Game(players["AI4"],players["AI4"],board0)
+    game = Game(players["AI3"],players["AI3"],board0)
     load_assets(game.board)
     game.start(True)
     post_game(game)
