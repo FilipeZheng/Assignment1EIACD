@@ -6,9 +6,8 @@ class animal():
         self.rank = ["Mouse","Cat","Dog","Wolf","Leopard","Tiger","Lion","Elephant"].index(type_)       #using a dictionary is perhaps better
         self.isInTrap = False
         self.isInWater = False
-        self.str = f"{chr(-self.rank+40+self.player*32)}"
     def __str__(self):              #currently a placeholder
-        return self.str
+        return f"{chr(-self.rank+40+self.player*32)}"
 
     def __le__(self,other):         #this allows operations such as animal1 <= animal2 for comparing if an animal can capture another one
         if not isinstance(other,animal):
@@ -44,8 +43,8 @@ class animal():
                 moves.add((cur_pos,next_pos))
         return moves
 
-    def __hash__(self):
-        return hash(self.str)
+    def __hash__(self):         # not used anymore
+        return hash(str(self))
 
 class board:        # used for representing the initial board, does not include the animals
     def __init__(self,empty_board:list,initial_p1_animals,initial_p2_animals):
@@ -145,8 +144,9 @@ class State():              #object with one state of the game
         self.update_available_moves()   #func that is defined below
         self.winner = -1
         self.turns_since_last_capture = 0
-        self.hash = hash((tuple(self.animals[1].items()),tuple(self.animals[2].items())))
+        #self.hash = hash((tuple(self.animals[1].items()),tuple(self.animals[2].items())))
         self.children_cache = {}
+        self.heuristic_cache = {}
     
     def update_available_moves(self):                   #adds the elements to the dict
         self.available_moves = {move
