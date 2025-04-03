@@ -6,7 +6,7 @@ pygame.init()
 path = os.path.dirname(__file__)
 
 window_x = 490
-window_y = 710
+window_y = 690
 
 dir = "Assetsfinal"
 screen = pygame.display.set_mode((window_x,window_y))
@@ -15,7 +15,7 @@ pygame.display.set_caption("Jungle")
 def load_assets(board_):
     global bg,a_sprites,tile_size,ldark,dark
     maxx,maxy = board_.width,board_.height
-    tile_size = min(window_x//maxx,(window_y-80)//maxy)
+    tile_size = min(window_x//maxx,(window_y-60)//maxy)
     sprite_dimensions = (a:=tile_size-10,a)
     def load_sprite(file):
         img = pygame.image.load(os.path.join(path,dir,file))
@@ -60,8 +60,10 @@ def xyblit(screen,img,xy:tuple):
     x,y = xy
     screen.blit(img,(x*tile_size+5,y*tile_size+5))
 
-def display(state):
-    global screen
+font = pygame.font.Font(None, 50)
+
+def display(state,turn = None):
+    global screen,running,font,window_y,window_x
     screen.fill((122,22,22))
     screen.blit(bg,(0,0))
     pos_animals = (animal for dict in state.animals.values() for animal in dict.items())
@@ -69,12 +71,18 @@ def display(state):
         sprite = a_sprites[(animal.rank,animal.player)]
         xyblit(screen,sprite,pos)
         
-    font = pygame.font.Font(None, 80)
     if state.winner == -1:
         player_text = font.render(f"Player {state.player}", True, (255, 255, 255))
     else:
-        player_text = font.render(f"Winner: {3-state.player}", True, (255, 255, 255))
-    screen.blit(player_text,(10,window_y-70))
+        if state.winner == 0:
+            player_text = font.render(f"Draw !!!", True, (255, 255, 255))
+        else:
+            player_text = font.render(f"Winner: {3-state.player}!", True, (255, 255, 255))
+    screen.blit(player_text,(10,window_y-50))
+    
+    if turn!=None:
+        turn_text = font.render(f"Turn   {turn+1:{" "}>3} ",True,(255,255,255))
+        screen.blit(turn_text,(window_x-180,window_y-50))
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -89,12 +97,12 @@ def human_player(game): #overwrites the original function as the original one be
         x,y=posx//tile_size,posy//tile_size
         if (x,y)in moves:
             game.state = game.state.move((selected,(x,y)))
-            display(game.state)
+            display(game.state,game.turns)
             pygame.display.flip()
             play = False
             return
         moves.clear()
-        display(game.state)
+        display(game.state,game.turns)
         xyblit(screen,ldark,(x,y))
         selected = (x,y)
         if selected in (a:=game.state.animals[game.state.player]):
@@ -105,7 +113,7 @@ def human_player(game): #overwrites the original function as the original one be
         pygame.display.flip()
 
     
-    display(game.state)
+    display(game.state,game.turns)
     pygame.display.flip()
     moves = {}              #this dict keeps track of the moves player may play after selecting an animal
     selected = None
@@ -134,7 +142,8 @@ board0.animals[2] = {(0,0):animal("Lion",2),
                     (0,2):animal("Mouse",2),
                     (2,2):animal("Leopard",2),
                     (4,2):animal("Wolf",2),
-                    (6,2):animal("Elephant",2)},
+                    (6,2):animal("Elephant",2)}
+
 board0.animals[1]={(0,6):animal("Elephant",1),
                     (2,6):animal("Wolf",1),
                     (4,6):animal("Leopard",1),
@@ -149,26 +158,52 @@ board0.animals[1]={(0,6):animal("Elephant",1),
 old_play = Game.play
 def new_func(self):
     old_play(self)
-    display(self.state)
+    display(self.state,self.turns)
 Game.play = new_func
 
 old_start = Game.start
 def new_func(self,*arg):
-    display(self.initial_state)
+    display(self.state,self.turns)
     old_start(self,*arg)
 Game.start = new_func
 
 running = True
 
 def post_game(game):
-    display(game.state)
-    while running:
+    def display1(state,turns):
+        global display,font,screen,window_x,window_y
+        display(state,turns)
+        text = font.render("-      +",True,(255,255,255))
+        screen.blit(text,(window_x-95,window_y-52))
+        pygame.display.flip()
+    global running
+    def click():
+        nonlocal board_y,turn,notExit
+        posx,posy = pygame.mouse.get_pos()
+        if posy > board_y:
+            if posx > window_x-60:
+                turn = (turn+1)%game.turns
+            elif posx > window_x-120:
+                turn = (turn-1)%game.turns
+            elif posx < window_x-180:
+                notExit = 0
+            display1(game.log[turn],turn)
+    display1(game.state,game.turns)
+
+    turn = game.turns
+    game.turns += 1	# game.turns will now act as the upper bound for turn
+    board_y = game.state.board.height*tile_size
+    notExit = 1
+    while running and notExit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                click()
+    clock.tick(10)
 
 while running:
-    game = Game(players["AI3"],players["AI2"],board0)
+    game = Game(players["AI4"],players["AI4"],board0)
     load_assets(game.board)
     game.start(True)
     post_game(game)
