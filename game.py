@@ -141,7 +141,7 @@ class State():              #object with one state of the game
         self.board = board_
         self.animals = animals or board_.animals   #made for selecting animals easier as the animals weren't originally stored in the board
         self.player = player                 # player refers to the player who's going to make the next play
-        self.available_moves = set()    # the format of the moves in the set is (start,dest)
+        self.available_moves = None    # the format of the moves in the set is (start,dest)
         self.update_available_moves()   #func that is defined below
         self.winner = -1
         self.turns_since_last_capture = 0
@@ -149,11 +149,10 @@ class State():              #object with one state of the game
         self.children_cache = {}
     
     def update_available_moves(self):                   #adds the elements to the dict
-        self.available_moves.clear()
-        for pos,ani in self.animals[self.player].items():
-            moves = ani.available_moves(pos,self)           
-            self.available_moves.update(moves)              # Another way of programming this would've been making the animals update the dict directly, but having the animals creating a seperate dict helps for seeing the available moves a specific animal has
-
+        self.available_moves = {move
+             for pos,ani in self.animals[self.player].items()
+            for move in ani.available_moves(pos,self)}
+        
     def update_winner(self):
         if self.turns_since_last_capture >= 100:
             self.winner = 0
@@ -168,21 +167,23 @@ class State():              #object with one state of the game
 
 
     def move(self,move):
-        if t:=self.children_cache.get(move): return t
+        if (t:=self.children_cache.get(move)): return t
         start,dest = move
-        new_animals = deepcopy(self.animals)
-        p_animals = new_animals[self.player]
-        p_animals[dest] = p_animals[start]
+        p_animals = self.animals[self.player].copy()
+        p_animals[dest] = deepcopy(p_animals[start])
         p_animals[dest].isInTrap = True if dest in self.board.traps[self.player] else False
         p_animals[dest].isInWater = True if dest in self.board.water else False
         del p_animals[start]
-        if dest in (o_animals := new_animals[3-self.player]):
+        if dest in (o_animals := self.animals[3-self.player]):
+            o_animals = o_animals.copy()
             del o_animals[dest]
             last_capture = 0
         else: last_capture = self.turns_since_last_capture + 1
+        new_animals = {self.player:p_animals,3-self.player:o_animals}
         new_state = State(self.board,new_animals,player=3-self.player)
         new_state.turns_since_last_capture = last_capture
         new_state.update_winner()
+        
         self.children_cache[move]=new_state
         return new_state
 
