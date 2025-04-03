@@ -3,26 +3,26 @@ from players import *
 class Game():
     def __init__(self, player_1, player_2,board_=board0):
         self.board = board_
-        self.initial_state = State(board_)
+        self.state = State(board_)
         self.player_1 = player_1
         self.player_2 = player_2
         self.log = []
+        self.turns = 0
 
-    def play(self):
+    def play(self):     # function used to make a play
         if self.state.player == 1:
             self.player_1(self)
         else:                
-            self.player_2(self)    
+            self.player_2(self)
+        self.turns += 1
     def start(self, log_moves = False,log_game = True):
-        self.state = deepcopy(self.initial_state)
-        game_log = [self.state]
-        self.log.append(game_log)
+        self.log.append(self.state)
         while True:
             if log_moves:
                 print(repr(self.state))
             self.play()
             if log_game:
-                game_log.append(self.state)
+                self.log.append(self.state)
             if (w:=self.state.winner) != -1:
                 break
         if log_moves:
@@ -32,20 +32,6 @@ class Game():
             elif self.state.winner in (1,2):
               print(f"End of game! Player {self.state.winner} wins!")
         return w
-    def run_n_matches(self, n, max_time = 3600, log_moves = False):
-        start_time = time.time()
-
-        results = [0,0,0] # [player 1 victories, player 2 victories]
-
-        # Your Code Here
-        for _ in range(n):
-          results[self.start(log_moves)] += 1
-          if time.time()-start_time > max_time:
-            break
-        print("\n=== Elapsed time: %s seconds ===" % (int(time.time() - start_time)))
-        print(f"  Player 1: {results[0]} victories")
-        print(f"  Player 2: {results[1]} victories")
-        print("===============================")
     def run_match(self,log_moves=True):
         self.start(log_moves)
 
