@@ -9,15 +9,16 @@ def execute_random_move(game):      #player function
     game.state = game.state.move(move)
 
 # The following dict is for heuristic funtions
-strengths = {"Elephant":11,"Lion":11,"Tiger":10,"Leopard":6,"Wolf":5,"Dog":4,"Cat":3,"Mouse":2}
+strengths = {"Elephant":13,"Lion":12,"Tiger":11,"Leopard":7,"Wolf":6,"Dog":5,"Cat":4,"Mouse":3}
 
 def Elephant_strength(state,pos,player):
-    x,y = pos
+    #x,y = pos
     for pos1,animal in state.animals[3-player].items():
         if animal.type_ == "Mouse":
-            x1,y1 = pos1
-            return 11+min(4,max(abs(x1-x)+abs(y1-y),2)) #The idea is that the closer th enemy mouse is to the elephant, the worse the elephant is, but we also cannot have a heuristic for the elephant that is too low.
-    return 15           # An elephant is worth more if there is no more Mouse on the other side to make capturing the Mouse more rewarding.
+            #x1,y1 = pos1
+            #return 9+min(4,max(abs(x1-x)+abs(y1-y),3))
+            return 9+min(4,min(2,dist_calc(pos,pos1))) #The idea is that the closer th enemy mouse is to the elephant, the worse the elephant is, but we also cannot have a heuristic for the elephant that is too low.
+    return 13           # An elephant is worth more if there is no more Mouse on the other side to make capturing the Mouse more rewarding.
 
 def find_strength(state,pos,player,animal):
         global strenghts
@@ -36,6 +37,9 @@ def dist_calc(pos,pos1):
     #return abs(pos[0]-pos1[0])+abs(pos[1]-pos1[1])         # Manhattan distance
     return max(abs(pos[0]-pos1[0]),abs(pos[1]-pos1[1]))     #Tchebychev distance
 
+def MaxDist(board):
+    #return board.height + board.width/2
+    return board.height
 """ # no longer used because calculating the hash value of a state took too much time
 cache = {}
 
@@ -78,17 +82,23 @@ def number_heuristic(state,player):     #Used for valuing having animals, should
 
 @heuristic
 def strength_heuristic(state,player):
+    global strengths
+    sum = 0
+    for animal in state.animals[player].values():
+        sum += strengths[animal.type_]
+    return sum
+@heuristic
+def strength_heuristic1(state,player):
     global find_strength
     sum = 0
     for pos,animal in state.animals[player].items():
-        strength = find_strength(state,pos,player,animal)
-        sum += strength
+        sum += find_strength(state,pos,player,animal)
     return sum
 
 @heuristic
 def pos_STR_heuristic(state,player):    #This heuristic weights around 0.2 times the strength one
-    max_dist = state.board.height + state.board.width/2
-    global find_strength
+    global find_strength,MaxDist
+    max_dist = MaxDist(state.board)
     sum = 0
     for i in state.board.lairs[3-player]: obj = i
     for pos,animal in state.animals[player].items():
@@ -100,8 +110,8 @@ def pos_STR_heuristic(state,player):    #This heuristic weights around 0.2 times
 
 @heuristic
 def pos_STR_heuristic1(state,player):        #this heuristic function is supposed to value more moving forward pieces that are already close to the opposite lair even closer, and therefore also valuing more stopping the enemy from getting close
-    global find_strength	        #This heuristic function weights on average around 0.2 times the strength one 
-    max_dist = state.board.height + state.board.width/2
+    global find_strength,MaxDist                #This heuristic function weights on average around 0.2 times the strength one 
+    max_dist = MaxDist(state.board)
     sum = 0
     for i in state.board.lairs[3-player]: obj= i
     for pos,animal in state.animals[player].items():
@@ -118,8 +128,8 @@ def mobility_heuristic(state,player):
 
 @heuristic
 def mobility_heuristic1(state,player):   #This heuristic counts the amount of moves an animal can make and how beneficial those move are, it's a way of seeing more into the future without increasing the depth of minimax
-    global find_strength	        #This heuristic function may weight on average around 0.5 times the strength one 
-    max_dist = state.board.height + state.board.width/2
+    global find_strength,MaxDist	        #This heuristic function may weight on average around 0.5 times the strength one 
+    max_dist = MaxDist(state.board)
     sum = 0
     for i in state.board.lairs[3-player]: obj= i
     for pos1,animal in state.animals[player].items():
@@ -131,8 +141,8 @@ def mobility_heuristic1(state,player):   #This heuristic counts the amount of mo
 
 @heuristic
 def mobility_heuristic2(state,player):   #This heuristic values the potential to move forward rather than the amount of possible moves
-    global find_strength	        #This heuristic function may weight on average around 0.2 times the strength one 
-    max_dist = state.board.height + state.board.width/2
+    global find_strength,MaxDist	        #This heuristic function may weight on average around 0.2 times the strength one 
+    max_dist = MaxDist(state.board)
     sum = 0
     for i in state.board.lairs[3-player]: obj = i
     for pos1,animal in state.animals[player].items():
@@ -140,7 +150,7 @@ def mobility_heuristic2(state,player):   #This heuristic values the potential to
         strength = find_strength(state,pos1,player,animal)
         min_dist = dist_calc(obj,pos1)
         for move in animal.available_moves(pos1,state):
-            if move[1] in state.board.traps[player]: sum+= 100*is_not_defended(state,move[1],player);break
+            if move[1] in state.board.traps[player]: sum+= 200*is_not_defended(state,move[1],player);break
             dist = dist_calc(move[1],obj)
             if dist < min_dist: min_dist = dist
         sum += strength*(max_dist/(max_dist+min_dist*9))
@@ -148,8 +158,8 @@ def mobility_heuristic2(state,player):   #This heuristic values the potential to
 
 @heuristic
 def mobility_heuristic3(state,player):   #This heuristic values more the potential to move animals that are already forward
-    global find_strength	        #This heuristic function may weight on average around 0.2 times the strength one 
-    max_dist = state.board.height + state.board.width/2
+    global find_strength,maxDist	        #This heuristic function may weight on average around 0.2 times the strength one 
+    max_dist = MaxDist(state.board)
     sum = 0
     for i in state.board.lairs[3-player]: obj = i
     for pos1,animal in state.animals[player].items():
@@ -157,30 +167,48 @@ def mobility_heuristic3(state,player):   #This heuristic values more the potenti
         strength = find_strength(state,pos1,player,animal)
         min_dist = dist_calc(obj,pos1)
         for move in animal.available_moves(pos1,state):
-            if move[1] in state.board.traps[player]: sum+= 100*is_not_defended(state,move[1],player);break
+            if move[1] in state.board.traps[player]: sum+= 200*is_not_defended(state,move[1],player);break
             dist = dist_calc(obj,move[1])
             if dist < min_dist: min_dist = dist
         sum += strength*((max_dist-min_dist)/max_dist)
     return sum
 
-#@store
+@heuristic
+def mobility_heuristic4(state,player):   #This heuristic values the potential to move forward and capture
+    global find_strength,strengths,MaxDist	        #This function favors the potential to capture so much that it can keep animals alive just to have the potential to capture, this function needs another heuristic function to balance this out
+    max_dist = MaxDist(state.board)
+    sum = 0
+    for i in state.board.lairs[3-player]: obj = i
+    for pos1,animal in state.animals[player].items():
+        if animal.isInTrap: sum += 1000*is_not_defended(state,pos1,player);continue
+        strength = find_strength(state,pos1,player,animal)
+        min_dist = dist_calc(obj,pos1)
+        for move in animal.available_moves(pos1,state):
+            if move[1] in state.board.traps[player]: sum+= 200*is_not_defended(state,move[1],player);break
+            if t:=state.animals[3-player].get(move[1]) : sum += strengths[t.type_]*0.25
+            dist = dist_calc(move[1],obj)
+            if dist < min_dist: min_dist = dist
+        sum += strength*(max_dist/(max_dist+min_dist*9))
+    return sum
+
+
 @state_cache
 def heuristic1(state):
-    return number_heuristic(state)+pos_STR_heuristic(state)*5.0 + 2.5*mobility_heuristic2(state)
+    return strength_heuristic1(state)+pos_STR_heuristic(state)*1.0+ 0.75*mobility_heuristic2(state)
 
-#@store
+
 @state_cache
 def heuristic2(state):
     return number_heuristic(state)*2 + strength_heuristic(state) + 5*pos_STR_heuristic1(state)
 
-#@store
+
 @state_cache
 def heuristic3(state):
-    return strength_heuristic(state)*3 + pos_STR_heuristic(state)*3.0 + 1.5*mobility_heuristic1(state)
-#@store
+    return strength_heuristic1(state)+pos_STR_heuristic(state)*1.0+ 0.75*mobility_heuristic4(state)
+
 @state_cache
 def heuristic4(state):
-    return pos_STR_heuristic(state)
+    return pos_STR_heuristic1(state)*1.0+strength_heuristic1(state)
 
 # There are more heuristic functions to make
 
@@ -265,8 +293,8 @@ def human_player(game):     #This function was only used for testing in terminal
 # Different AI levels
 players = {
     "Human": human_player,
-    "AI1": execute_minimax_move(heuristic1, 2),  # Easy AI
-    "AI2": execute_minimax_move(heuristic2, 3),  # Medium AI
+    "AI1": execute_minimax_move(heuristic3, 2),  # Easy AI
+    "AI2": execute_minimax_move(heuristic4, 4),  # Medium AI
     "AI3": execute_minimax_move(heuristic3, 4),  # Hard AI
     "Random": execute_random_move  # Random moves
 }   
