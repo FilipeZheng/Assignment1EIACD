@@ -34,15 +34,18 @@ Jungle Chess, also known as Dou Shou Qi or Animal Chess, is a traditional Chines
 6. Dog (3)
 7. Cat (2)
 8. Mouse (1)
-
+   
+### Rules:
+- All pieces can move one tile at a time horizontally or vertically but not diagonally
+- Pieces can capture opposing pieces with lower or equal strength by moving on them
+- A player wins by entering the opponent's lair
+- A player who cannot make any move loses
+  
 ### Special Rules:
-- Mouse can swim in water and capture while in water
-- Lion and Tiger can jump across water horizontally or vertically
-- Stronger animals capture weaker ones
-- Mouse can defeat Elephant (special case)
-- Only Mouse can enter water tiles
-- Traps weaken enemy pieces to 0 strength
-- Win by entering the opponent's den
+- Mouse can capture Elephant (special case)
+- Mouse can swim in water but cannot jump out of water and capture an Elephant at the same time
+- Lion and Tiger can jump across water horizontally or vertically if there is no Mouse in the way
+- Enemy pieces in a trap can be captured by any piece
 
 ## Features
 

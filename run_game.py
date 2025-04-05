@@ -2,6 +2,7 @@ import pygame
 from load_game import *
 import os
 import random
+import time  # Adicionando o módulo time
 pygame.init()
 
 path = os.path.dirname(__file__)
@@ -409,6 +410,16 @@ def get_players(selection):
     else:  # Random AI
         return players["Random"]  # Agora usa o execute_random_move
 
+def game_loop(game):
+    global running,screen,window_x,window_y,font
+    while running and game.state.winner == -1:
+        display(game.state)
+        pygame.display.flip()
+        if game.state.player == 1:
+            game.p1.play(game)
+        else:
+            game.p2.play(game)
+            
 while running:
     # Show start screen first
     if not start_screen():
