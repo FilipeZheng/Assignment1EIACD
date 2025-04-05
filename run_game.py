@@ -10,7 +10,130 @@ window_y = 690
 
 dir = "Assetsfinal"
 screen = pygame.display.set_mode((window_x,window_y))
-pygame.display.set_caption("Jungle")
+pygame.display.set_caption("Jungle Chess")
+
+# Colors
+RED = (122, 22, 22)
+CREAM = (255, 243, 224)
+DARK_RED = (90, 15, 15)
+HOVER_RED = (150, 30, 30)
+
+# Load logo
+try:
+    logo_img = pygame.image.load(os.path.join(path, dir, "interface", "lion_logo.png")).convert_alpha()
+    # Calcular tamanho proporcional mantendo a qualidade
+    logo_height = int(window_y * 0.25)  # 25% da altura da janela
+    logo_width = int(logo_height * 1.2)  # Proporção um pouco mais larga que alta
+    logo_img = pygame.transform.smoothscale(logo_img, (logo_width, logo_height))
+    has_logo = True
+except:
+    has_logo = False
+
+class Button:
+    def __init__(self, x, y, width, height, text, font_size=32):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.font = pygame.font.Font(None, font_size)
+        self.color = DARK_RED
+        self.text_color = CREAM
+        self.is_hovered = False
+        
+    def draw(self, surface):
+        # Draw button background with rounded corners
+        color = HOVER_RED if self.is_hovered else self.color
+        pygame.draw.rect(surface, color, self.rect, border_radius=10)
+        
+        # Draw text
+        text_surface = self.font.render(self.text, True, self.text_color)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        surface.blit(text_surface, text_rect)
+    
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEMOTION:
+            self.is_hovered = self.rect.collidepoint(event.pos)
+            return False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.is_hovered:
+                return True
+        return False
+
+def draw_start_screen():
+    screen.fill(RED)
+    
+    # Draw logo text
+    logo_font = pygame.font.Font(None, 80)
+    logo_text = logo_font.render("JUNGLE", True, CREAM)
+    chess_text = logo_font.render("CHESS", True, CREAM)
+    
+    # Calculate positions for better layout
+    if has_logo:
+        # Centralizar o texto
+        text_y = window_y // 4
+        logo_rect = logo_text.get_rect(centerx=window_x//2, centery=text_y)
+        chess_rect = chess_text.get_rect(centerx=window_x//2, centery=text_y + 70)
+        
+        # Posicionar o leão abaixo do texto
+        logo_x = (window_x - logo_img.get_width()) // 2
+        logo_y = text_y + 120  # Espaço abaixo do texto "CHESS"
+        screen.blit(logo_img, (logo_x, logo_y))
+    else:
+        logo_rect = logo_text.get_rect(centerx=window_x//2, centery=window_y//3)
+        chess_rect = chess_text.get_rect(centerx=window_x//2, centery=window_y//3 + 70)
+    
+    screen.blit(logo_text, logo_rect)
+    screen.blit(chess_text, chess_rect)
+    
+    # Create start button with better positioning
+    button_width = 220
+    button_height = 60
+    button_x = window_x//2 - button_width//2
+    button_y = window_y - 180 if has_logo else window_y - 150
+    start_button = Button(button_x, button_y, button_width, button_height, "START GAME", 45)
+    
+    return start_button
+
+def start_screen():
+    start_button = draw_start_screen()
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+            
+            if start_button.handle_event(event):
+                waiting = False
+                return True
+        
+        # Redraw screen
+        screen.fill(RED)
+        # Draw logo text and lion
+        logo_font = pygame.font.Font(None, 80)
+        logo_text = logo_font.render("JUNGLE", True, CREAM)
+        chess_text = logo_font.render("CHESS", True, CREAM)
+        
+        if has_logo:
+            # Centralizar o texto
+            text_y = window_y // 4
+            logo_rect = logo_text.get_rect(centerx=window_x//2, centery=text_y)
+            chess_rect = chess_text.get_rect(centerx=window_x//2, centery=text_y + 70)
+            
+            # Posicionar o leão abaixo do texto
+            logo_x = (window_x - logo_img.get_width()) // 2
+            logo_y = text_y + 120  # Espaço abaixo do texto "CHESS"
+            screen.blit(logo_img, (logo_x, logo_y))
+        else:
+            logo_rect = logo_text.get_rect(centerx=window_x//2, centery=window_y//3)
+            chess_rect = chess_text.get_rect(centerx=window_x//2, centery=window_y//3 + 70)
+        
+        screen.blit(logo_text, logo_rect)
+        screen.blit(chess_text, chess_rect)
+        
+        # Draw button
+        start_button.draw(screen)
+        pygame.display.flip()
+        clock.tick(60)
+    return True
 
 def load_assets(board_):
     global bg,a_sprites,tile_size,ldark,dark
@@ -18,28 +141,28 @@ def load_assets(board_):
     tile_size = min(window_x//maxx,(window_y-60)//maxy)
     sprite_dimensions = (a:=tile_size-10,a)
     def load_sprite(file):
-        img = pygame.image.load(os.path.join(path,dir,file))
-        img = pygame.transform.scale(img,sprite_dimensions)
+        img = pygame.image.load(os.path.join(path,dir,file)).convert_alpha()
+        img = pygame.transform.smoothscale(img,sprite_dimensions)
         return img
     animals = ("Mouse","Cat","Dog","Wolf","Leopard","Tiger","Lion","Elephant")
     a_sprites = {(rank,i):load_sprite(f"{animal}{i}.png") for rank,animal in enumerate(animals) for i in (1,2)}
 
     bg = pygame.Surface((tile_size*maxx,tile_size*maxy))
 
-
     tile_dimensions = (tile_size,tile_size)
 
-    tile = pygame.image.load(os.path.join(path,dir,"tile.png"))
-    tile = pygame.transform.scale(tile,tile_dimensions)    
+    # Melhorar qualidade dos tiles do tabuleiro
+    tile = pygame.image.load(os.path.join(path,dir,"tile.png")).convert_alpha()
+    tile = pygame.transform.smoothscale(tile,tile_dimensions)    
 
     water = pygame.Surface(tile_dimensions)
     water.fill((255,44,44))
 
-    trap = pygame.image.load(os.path.join(path,dir,"trap.png"))
-    trap = pygame.transform.scale(trap,tile_dimensions)
+    trap = pygame.image.load(os.path.join(path,dir,"trap.png")).convert_alpha()
+    trap = pygame.transform.smoothscale(trap,tile_dimensions)
 
-    lair = pygame.image.load(os.path.join(path,dir,"lair.png"))
-    lair = pygame.transform.scale(lair,tile_dimensions)
+    lair = pygame.image.load(os.path.join(path,dir,"lair.png")).convert_alpha()
+    lair = pygame.transform.smoothscale(lair,tile_dimensions)
     
     d = {".":tile,"_":water,"#":trap,"O":lair}
     for y,row in enumerate(board_.empty_board):
@@ -203,6 +326,10 @@ def post_game(game):
     clock.tick(10)
 
 while running:
+    # Show start screen first
+    if not start_screen():
+        break
+        
     game = Game(players["AI3"],players["AI3"],board0)
     load_assets(game.board)
     game.start(True)
