@@ -108,42 +108,17 @@ class PlayerSelector:
         return False
 
 def draw_start_screen():
-    screen.fill(RED)
-    
-    # Draw logo text
-    logo_font = pygame.font.Font(None, 80)
-    logo_text = logo_font.render("JUNGLE", True, CREAM)
-    chess_text = logo_font.render("CHESS", True, CREAM)
-    
-    # Calculate positions for better layout
-    if has_logo:
-        # Centralizar o texto
-        text_y = window_y // 4
-        logo_rect = logo_text.get_rect(centerx=window_x//2, centery=text_y)
-        chess_rect = chess_text.get_rect(centerx=window_x//2, centery=text_y + 70)
-        
-        # Posicionar o leão abaixo do texto
-        logo_x = (window_x - logo_img.get_width()) // 2
-        logo_y = text_y + 120  # Espaço abaixo do texto "CHESS"
-        screen.blit(logo_img, (logo_x, logo_y))
-    else:
-        logo_rect = logo_text.get_rect(centerx=window_x//2, centery=window_y//3)
-        chess_rect = chess_text.get_rect(centerx=window_x//2, centery=window_y//3 + 70)
-    
-    screen.blit(logo_text, logo_rect)
-    screen.blit(chess_text, chess_rect)
-    
     # Create start button with better positioning
     button_width = 220
     button_height = 60
     button_x = window_x//2 - button_width//2
     button_y = window_y - 180 if has_logo else window_y - 150
     start_button = Button(button_x, button_y, button_width, button_height, "START GAME", 45)
-    
-    return start_button
+    board_options_button = Button(button_x, button_y+button_height*3//2, button_width, button_height, "BOARDS", 45)
+    return start_button,board_options_button
 
 def start_screen():
-    start_button = draw_start_screen()
+    start_button,board_options_button = draw_start_screen()
     waiting = True
     while waiting:
         for event in pygame.event.get():
@@ -152,7 +127,9 @@ def start_screen():
             
             if start_button.handle_event(event):
                 waiting = False
-                return True
+                return 1
+            if board_options_button.handle_event(event):
+                return 2
         
         # Redraw screen
         screen.fill(RED)
@@ -180,6 +157,7 @@ def start_screen():
         
         # Draw button
         start_button.draw(screen)
+        board_options_button.draw(screen)
         pygame.display.flip()
         clock.tick(60)
     return True
@@ -242,17 +220,16 @@ def state_blit(state,turn):
     for pos,animal in pos_animals:
         sprite = a_sprites[(animal.rank,animal.player)]
         xyblit(screen,sprite,pos)
-        
-    if state.winner == -1:
-        player_text = font.render(f"Player {state.player}", True, (255, 255, 255))
-    else:
-        if state.winner == 0:
-            player_text = font.render(f"Draw !!!", True, (255, 255, 255))
-        else:
-            player_text = font.render(f"Winner: {3-state.player}!", True, (255, 255, 255))
-    screen.blit(player_text,(10,window_y-50))
     
     if turn!=None:
+        if state.winner == -1:
+            player_text = font.render(f"Player {state.player}", True, (255, 255, 255))
+        else:
+            if state.winner == 0:
+                player_text = font.render(f"Draw !!!", True, (255, 255, 255))
+            else:
+                player_text = font.render(f"Winner: {3-state.player}!", True, (255, 255, 255))
+        screen.blit(player_text,(10,window_y-50))
         turn_text = font.render(f"Turn   {turn+1:{" "}>3} ",True,(255,255,255))
         screen.blit(turn_text,(window_x-180,window_y-50))
     
@@ -427,18 +404,56 @@ def get_players(selection):
     else:  # Random AI
         return players["Random"]  # Agora usa o execute_random_move
 
+def board_select_screen():
+    global boards,board_i
+    def display1():
+        global boards,boards_i
+        load_assets(boards[board_i])
+        state_blit(State(boards[board_i]),None)
+        text = font.render(f"{board_i}",True,(255,255,255))
+        screen.blit(text,(window_x-70,window_y-52))
+    back_button = Button(5,window_y-55,90,40,"BACK")
+    next_button = Button(window_x-45,window_y-55,40,40,">")
+    prev_button = Button(window_x-125,window_y-55,40,40,"<")
+    global running
+    display1()
+    board_num = len(boards)
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                return False
+            if back_button.handle_event(event):
+                return
+            if next_button.handle_event(event):
+                board_i = (board_i+1)%board_num
+                display1()
+            if prev_button.handle_event(event):
+                board_i = (board_i-1)%board_num
+                display1()
+        back_button.draw(screen)
+        next_button.draw(screen)
+        prev_button.draw(screen)
+        pygame.display.flip()
+        clock.tick(30)
+        
+
+boards = [board0,board1]
+board_i = 0
 while running:
     # Show start screen first
-    if not start_screen():
+    if (t:=start_screen())==2:
+        board_select_screen()
+    elif t==1:
+        # Select players
+        player1, player2 = select_players()
+        if player1 is None or player2 is None:  # User closed the window
+            break
+            
+        game = Game(player1, player2, boards[board_i])
+        load_assets(game.board)
+        game.start(False)
+        post_game(game)
+    else:
         break
-    
-    # Select players
-    player1, player2 = select_players()
-    if player1 is None or player2 is None:  # User closed the window
-        break
-        
-    game = Game(player1, player2, board0)
-    load_assets(game.board)
-    game.start(False)
-    post_game(game)
 pygame.quit()
