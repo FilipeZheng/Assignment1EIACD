@@ -234,8 +234,8 @@ def xyblit(screen,img,xy:tuple):
 
 font = pygame.font.Font(None, 50)
 
-def display(state,turn = None):
-    global screen,running,font,window_y,window_x
+def state_blit(state,turn):
+    global screen,font,window_y,window_x
     screen.fill((122,22,22))
     screen.blit(bg,(0,0))
     pos_animals = (animal for dict in state.animals.values() for animal in dict.items())
@@ -256,6 +256,9 @@ def display(state,turn = None):
         turn_text = font.render(f"Turn   {turn+1:{" "}>3} ",True,(255,255,255))
         screen.blit(turn_text,(window_x-180,window_y-50))
     
+def display(state,turn = None):
+    global running
+    state_blit(state,turn)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -263,18 +266,24 @@ def display(state,turn = None):
     pygame.display.flip()
 
 def human_player(game): #overwrites the original function as the original one becomes unnecessary
+    def display1(state,turn):
+        global state_blit,screen
+        nonlocal back_button
+        state_blit(state,turn)
+        back_button.draw(screen)
+        pygame.display.flip()
+        
     def select():
         nonlocal moves,selected,play
         posx,posy = pygame.mouse.get_pos()
         x,y=posx//tile_size,posy//tile_size
         if (x,y)in moves:
             game.state = game.state.move((selected,(x,y)))
-            display(game.state,game.turns)
-            pygame.display.flip()
+            display1(game.state,game.turns)
             play = False
             return
         moves.clear()
-        display(game.state,game.turns)
+        display1(game.state,game.turns)
         xyblit(screen,ldark,(x,y))
         selected = (x,y)
         if selected in (a:=game.state.animals[game.state.player]):
@@ -284,13 +293,13 @@ def human_player(game): #overwrites the original function as the original one be
                 xyblit(screen,dark,xy)
         pygame.display.flip()
 
-    
-    display(game.state,game.turns)
     pygame.display.flip()
     moves = {}              #this dict keeps track of the moves player may play after selecting an animal
     selected = None
     global running
     play = True
+    back_button = Button(window_x//2-45,window_y-55,90,40,"BACK")
+    display1(game.state,game.turns)
     board_y = game.state.board.height*tile_size
     while running and play:
         for event in pygame.event.get():
@@ -300,9 +309,13 @@ def human_player(game): #overwrites the original function as the original one be
                 posx,posy = pygame.mouse.get_pos()
                 if posy < board_y:
                     select()
+            if back_button.handle_event(event):
+                return 1
+        back_button.draw(screen)
+        pygame.display.flip()
         clock.tick(10)
-    
     if not running: game.state.winner = 3
+
 players["Human"] = human_player
 
 
@@ -343,14 +356,17 @@ running = True
 
 def post_game(game):
     def display1(state,turns):
-        global display,font,screen,window_x,window_y
-        display(state,turns)
+        nonlocal exit_button
+        global state_blit,font,screen,window_x,window_y
+        state_blit(state,turns)
         text = font.render("-      +",True,(255,255,255))
         screen.blit(text,(window_x-95,window_y-52))
+        exit_button.draw(screen)
         pygame.display.flip()
     global running
+    exit_button = Button(window_x//2-45,window_y-55,90,40,"EXIT")
     def click():
-        nonlocal board_y,turn,notExit
+        nonlocal board_y,turn
         posx,posy = pygame.mouse.get_pos()
         if posy > board_y:
             if posx > window_x-60:
@@ -359,19 +375,20 @@ def post_game(game):
                 turn = (turn-1)%game.turns
             elif posx < window_x-180:
                 notExit = 0
-            display1(game.log[turn],turn)
     display1(game.state,game.turns)
 
     turn = game.turns
     game.turns += 1	# game.turns will now act as the upper bound for turn
     board_y = game.state.board.height*tile_size
-    notExit = 1
-    while running and notExit:
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 click()
+            if exit_button.handle_event(event):
+                return
+        display1(game.log[turn],turn)
     clock.tick(10)
 
 def select_players():
