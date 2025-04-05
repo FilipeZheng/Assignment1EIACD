@@ -204,6 +204,7 @@ def execute_minimax_move(evaluate_func, depth):
                 if t<beta:
                     beta=t
                     nextMove = move
+        if not nextMove: nextMove = random.choice(tuple(game.state.available_moves))
         game.state = game.state.move(nextMove)
     return execute
 
