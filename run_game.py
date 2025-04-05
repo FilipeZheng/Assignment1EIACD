@@ -439,6 +439,6 @@ while running:
         
     game = Game(player1, player2, board0)
     load_assets(game.board)
-    game.start(True)
+    game.start(False)
     post_game(game)
 pygame.quit()
