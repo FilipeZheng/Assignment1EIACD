@@ -15,7 +15,7 @@ class Game():
                 t = self.player_1(self)
             else:                
                 t = self.player_2(self)
-            if t :
+            if t :        # t != 0 means going back two moves
                 if self.turns>1:
                     del self.log[-1]
                     del self.log[-1]
