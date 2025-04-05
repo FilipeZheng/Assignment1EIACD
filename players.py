@@ -259,11 +259,12 @@ def human_player(game):     #This function was only used for testing in terminal
     game.state = game.state.move(a)
 
 
-players = {"Human":human_player,             #This dict will be read for choosing the players who are going to play the game
-           "Random":execute_random_move,
-           "AI1":execute_minimax_move(pos_STR_heuristic,4),
-           "AI2":execute_minimax_move(heuristic3,4),
-           "AI3":execute_minimax_move(heuristic1,4),
-           "AI4":execute_minimax_move(heuristic4,4)
-           }   
+# Different AI levels
+players = {
+    "Human": human_player,
+    "AI1": execute_minimax_move(heuristic1, 2),  # Easy AI
+    "AI2": execute_minimax_move(heuristic2, 3),  # Medium AI
+    "AI3": execute_minimax_move(heuristic3, 4),  # Hard AI
+    "Random": execute_random_move  # Random moves
+}   
 

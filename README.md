@@ -2,13 +2,14 @@
 
 ## Description
 
-Jungle Chess, also known as Dou Shou Qi or Animal Chess, is a traditional Chinese board game. This implementation features a graphical interface with AI opponents.
+Jungle Chess, also known as Dou Shou Qi or Animal Chess, is a traditional Chinese board game. This implementation features a graphical interface with AI opponents of varying difficulties.
 
 ## Table of Contents
 - [Description](#description)
 - [How to Play](#how-to-play)
 - [Game Rules](#game-rules)
 - [Features](#features)
+- [Player Types](#player-types)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -18,7 +19,9 @@ Jungle Chess, also known as Dou Shou Qi or Animal Chess, is a traditional Chines
 
 1. Run `run_game.py` to start the game
 2. Click the "START GAME" button on the main menu
-3. The game alternates between players, with Player 1 at the bottom and Player 2 at the top
+3. Select Player 1 type (Human/AI)
+4. Select Player 2 type (Human/AI)
+5. The game alternates between players, with Player 1 at the bottom and Player 2 at the top
 
 ## Game Rules
 
@@ -43,11 +46,21 @@ Jungle Chess, also known as Dou Shou Qi or Animal Chess, is a traditional Chines
 
 ## Features
 
-- Graphical interface
-- AI opponents with different strategies
+- Graphical interface with start menu
+- Multiple AI difficulty levels
+- Player type selection for both players
 - Move validation and game state tracking
 - Interactive piece selection and movement
 - Game replay functionality
+
+## Player Types
+
+### Available Players:
+1. **Human**: Manual control with mouse input
+2. **Easy AI**: Basic strategic decisions with limited depth search
+3. **Medium AI**: Improved strategy with moderate depth search
+4. **Hard AI**: Advanced strategy with deeper search
+5. **Random AI**: Makes random legal moves
 
 ## Requirements
 

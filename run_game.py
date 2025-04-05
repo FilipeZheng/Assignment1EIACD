@@ -1,6 +1,7 @@
 import pygame
 from load_game import *
 import os
+import random
 pygame.init()
 
 path = os.path.dirname(__file__)
@@ -17,6 +18,7 @@ RED = (122, 22, 22)
 CREAM = (255, 243, 224)
 DARK_RED = (90, 15, 15)
 HOVER_RED = (150, 30, 30)
+SELECTED_RED = (180, 40, 40)
 
 # Load logo
 try:
@@ -37,10 +39,16 @@ class Button:
         self.color = DARK_RED
         self.text_color = CREAM
         self.is_hovered = False
+        self.is_selected = False
         
     def draw(self, surface):
         # Draw button background with rounded corners
-        color = HOVER_RED if self.is_hovered else self.color
+        if self.is_selected:
+            color = SELECTED_RED
+        elif self.is_hovered:
+            color = HOVER_RED
+        else:
+            color = self.color
         pygame.draw.rect(surface, color, self.rect, border_radius=10)
         
         # Draw text
@@ -55,6 +63,46 @@ class Button:
         
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.is_hovered:
+                return True
+        return False
+
+class PlayerSelector:
+    def __init__(self, player_num):
+        self.player_num = player_num
+        button_width = 180
+        button_height = 50
+        spacing = 20
+        start_y = window_y // 2 - 50
+
+        # Criar botões para cada opção
+        self.buttons = []
+        options = ["Human", "Easy AI", "Medium AI", "Hard AI", "Random AI"]
+        for i, text in enumerate(options):
+            x = window_x//2 - button_width//2
+            y = start_y + (button_height + spacing) * i
+            self.buttons.append(Button(x, y, button_width, button_height, text, 36))
+        
+        self.selected = None
+
+    def draw(self, surface):
+        # Desenhar título
+        title_font = pygame.font.Font(None, 48)
+        title_text = title_font.render(f"Select Player {self.player_num}", True, CREAM)
+        title_rect = title_text.get_rect(centerx=window_x//2, y=window_y//4)
+        surface.blit(title_text, title_rect)
+
+        # Desenhar botões
+        for button in self.buttons:
+            button.draw(surface)
+
+    def handle_event(self, event):
+        for i, button in enumerate(self.buttons):
+            if button.handle_event(event):
+                # Desselecionar todos os outros botões
+                for b in self.buttons:
+                    b.is_selected = False
+                button.is_selected = True
+                self.selected = i
                 return True
         return False
 
@@ -325,12 +373,53 @@ def post_game(game):
                 click()
     clock.tick(10)
 
+def select_players():
+    selectors = [PlayerSelector(1), PlayerSelector(2)]
+    current_selector = 0
+    
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return None, None
+            
+            if selectors[current_selector].handle_event(event):
+                if current_selector == 0:
+                    current_selector = 1
+                else:
+                    # Ambos os jogadores foram selecionados
+                    selections = [s.selected for s in selectors]
+                    if None not in selections:
+                        return get_players(selections[0]), get_players(selections[1])
+        
+        # Desenhar tela
+        screen.fill(RED)
+        selectors[current_selector].draw(screen)
+        pygame.display.flip()
+        clock.tick(60)
+
+def get_players(selection):
+    if selection == 0:  # Human
+        return players["Human"]
+    elif selection == 1:  # Easy AI
+        return players["AI1"]
+    elif selection == 2:  # Medium AI
+        return players["AI2"]
+    elif selection == 3:  # Hard AI
+        return players["AI3"]
+    else:  # Random AI
+        return players["Random"]  # Agora usa o execute_random_move
+
 while running:
     # Show start screen first
     if not start_screen():
         break
+    
+    # Select players
+    player1, player2 = select_players()
+    if player1 is None or player2 is None:  # User closed the window
+        break
         
-    game = Game(players["AI3"],players["AI3"],board0)
+    game = Game(player1, player2, board0)
     load_assets(game.board)
     game.start(True)
     post_game(game)
