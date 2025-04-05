@@ -10,11 +10,20 @@ class Game():
         self.turns = 0
 
     def play(self):     # function used to make a play
-        if self.state.player == 1:
-            self.player_1(self)
-        else:                
-            self.player_2(self)
-        self.turns += 1
+        while True:
+            if self.state.player == 1:
+                t = self.player_1(self)
+            else:                
+                t = self.player_2(self)
+            if t :
+                if self.turns>1:
+                    del self.log[-1]
+                    del self.log[-1]
+                    self.turns -= 2
+                    self.state = self.log[-1]
+            else:
+                self.turns += 1
+                return
     def start(self, log_moves = False,log_game = True):
         self.log.append(self.state)
         while True:
