@@ -1,8 +1,10 @@
 from game import *
 import random
+import time  # Adicionando o módulo time
 
 
 def execute_random_move(game):      #player function
+    time.sleep(0.5)  # Delay de 0.5 segundos antes do movimento
     move = random.choice(tuple(game.state.available_moves))
     game.state = game.state.move(move)
 
@@ -184,25 +186,25 @@ def heuristic4(state):
 
 def execute_minimax_move(evaluate_func, depth):
     def execute(game):                                  # This is the function the function will return
-      nonlocal depth
-      nextMove = None
-      alpha,beta = float("-inf"),float("inf")
-      moves = tuple(map(lambda move: (move,game.state.move(move)),game.state.available_moves))
-      player = game.state.player
-      if player == 1:
-        for move,new_state in sorted(moves,key=lambda x:-evaluate_func(x[1])):
-            t=minimax(new_state,depth-1,alpha,beta,3-player,evaluate_func)
-            if t>alpha:
-                alpha=t
-                nextMove = move
-      else:
-        for move,new_state in sorted(moves,key=lambda x:evaluate_func(x[1])):
-            t=minimax(new_state,depth-1,alpha,beta,3-player,evaluate_func)
-            if t<beta:
-                nextMove = move
-                beta=t
-      if not nextMove: nextMove = random.choice(tuple(game.state.available_moves))
-      game.state=game.state.move(nextMove)
+        time.sleep(0.5)  # Delay de 0.5 segundos antes do movimento
+        nonlocal depth
+        nextMove = None
+        alpha,beta = float("-inf"),float("inf")
+        moves = tuple(map(lambda move: (move,game.state.move(move)),game.state.available_moves))
+        player = game.state.player
+        if player == 1:
+            for move,new_state in sorted(moves,key=lambda x:-evaluate_func(x[1])):
+                t=minimax(new_state,depth-1,alpha,beta,3-player,evaluate_func)
+                if t>alpha:
+                    alpha=t
+                    nextMove = move
+        else:
+            for move,new_state in sorted(moves,key=lambda x:evaluate_func(x[1])):
+                t=minimax(new_state,depth-1,alpha,beta,3-player,evaluate_func)
+                if t<beta:
+                    beta=t
+                    nextMove = move
+        game.state = game.state.move(nextMove)
     return execute
 
 def minimax(state, depth, alpha, beta, player, evaluate_func)->float:
