@@ -210,6 +210,10 @@ def heuristic3(state):
 def heuristic4(state):
     return pos_STR_heuristic1(state)*1.0+strength_heuristic1(state)
 
+@state_cache
+def heuristic5(state):
+    return mobility_heuristic3(state)*0.3 + pos_STR_heuristic1(state)*1 + mobility_heuristic1(state)*0.4
+
 # There are more heuristic functions to make
 
 def execute_minimax_move(evaluate_func, depth):
@@ -293,9 +297,9 @@ def human_player(game):     #This function was only used for testing in terminal
 # Different AI levels
 players = {
     "Human": human_player,
-    "AI1": execute_minimax_move(heuristic3, 2),  # Easy AI
+    "AI1": execute_minimax_move(heuristic1, 2),  # Easy AI
     "AI2": execute_minimax_move(heuristic4, 4),  # Medium AI
-    "AI3": execute_minimax_move(heuristic3, 4),  # Hard AI
+    "AI3": execute_minimax_move(heuristic1, 4),  # Hard AI
     "Random": execute_random_move  # Random moves
 }   
 
