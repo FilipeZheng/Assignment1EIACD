@@ -61,7 +61,7 @@ Jungle Chess, also known as Dou Shou Qi or Animal Chess, is a traditional Chines
 ### Available Players:
 1. **Human**: Manual control with mouse input
 2. **Easy AI**: Basic strategic decisions (depth=2)
-3. **Medium AI**: Improved strategy (depth=3)
+3. **Medium AI**: Improved strategy (depth=4)
 4. **Hard AI**: Advanced strategy (depth=4)
 5. **Random AI**: Makes random legal moves
 
