@@ -47,6 +47,11 @@ Jungle Chess, also known as Dou Shou Qi or Animal Chess, is a traditional Chines
 - Lion and Tiger can jump across water horizontally or vertically if there is no Mouse in the way
 - Enemy pieces in a trap can be captured by any piece
 
+### Extra Rules:
+ The game ends in a draw in any of the folowing conditions:
+  - 100 turns pass without any pieces being captured
+  - The same pieces move back and forth in the same way three times in a row
+
 ## Features
 
 - Graphical interface with start menu
