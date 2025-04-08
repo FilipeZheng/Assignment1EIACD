@@ -147,6 +147,9 @@ class State():              #object with one state of the game
         #self.hash = hash((tuple(self.animals[1].items()),tuple(self.animals[2].items())))
         self.children_cache = {}
         self.heuristic_cache = {}
+        self.last_move = None
+        self.last_move1 = None
+        self.repeat_move = 0
     
     def update_available_moves(self):                   #adds the elements to the dict
         self.available_moves = {move
@@ -154,6 +157,9 @@ class State():              #object with one state of the game
             for move in ani.available_moves(pos,self)}
         
     def update_winner(self):
+        if self.repeat_move > 5:
+            self.winner = 0
+            return
         if self.turns_since_last_capture >= 100:
             self.winner = 0
         if not self.available_moves:
@@ -182,6 +188,14 @@ class State():              #object with one state of the game
         new_animals = {self.player:p_animals,3-self.player:o_animals}
         new_state = State(self.board,new_animals,player=3-self.player)
         new_state.turns_since_last_capture = last_capture
+
+        new_state.last_move1 = self.last_move
+        new_state.last_move = move
+        if self.last_move1 == tuple(reversed(move)):
+            new_state.repeat_move = self.repeat_move +1
+        else:
+            new_state.repeat_move = 0
+        
         new_state.update_winner()
         
         self.children_cache[move]=new_state
