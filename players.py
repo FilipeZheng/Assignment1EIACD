@@ -17,7 +17,7 @@ def Elephant_strength(state,pos,player):
         if animal.type_ == "Mouse":
             #x1,y1 = pos1
             #return 9+min(4,max(abs(x1-x)+abs(y1-y),3))
-            return 9+min(4,min(2,dist_calc(pos,pos1))) #The idea is that the closer th enemy mouse is to the elephant, the worse the elephant is, but we also cannot have a heuristic for the elephant that is too low.
+            return 9+min(4,min(2,dist_calc(pos,pos1))) #The idea is that the closer the enemy mouse is to the elephant, the worse the elephant is, but we also cannot have a heuristic for the elephant that is too low.
     return 13           # An elephant is worth more if there is no more Mouse on the other side to make capturing the Mouse more rewarding.
 
 def find_strength(state,pos,player,animal):
@@ -194,7 +194,7 @@ def mobility_heuristic4(state,player):   #This heuristic values the potential to
 
 @state_cache
 def heuristic1(state):
-    return strength_heuristic1(state)+pos_STR_heuristic(state)*1.0+ 0.75*mobility_heuristic2(state)
+    return strength_heuristic1(state)+pos_STR_heuristic(state)*0.5+ 0.25*mobility_heuristic2(state)
 
 
 @state_cache
