@@ -67,7 +67,7 @@ Jungle Chess, also known as Dou Shou Qi or Animal Chess, is a traditional Chines
 
 ## Requirements
 
-- Python 3.x
+- Python 3.8 or higher
 - Pygame library
 
 ## Installation
@@ -87,7 +87,7 @@ pip install pygame
 
 Run the game:
 ```bash
-python run_game.py
+python3 run_game.py
 ```
 
 ## Credits
